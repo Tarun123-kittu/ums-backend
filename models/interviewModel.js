@@ -48,6 +48,18 @@ module.exports = (sequelize) => {
                 allowNull: true,
                 defaultValue: 'pending',
             },
+            tech_round_start_time:{
+                type: DataTypes.DATE,
+                defaultValue: DataTypes.NOW,
+            },
+            total_tech_round_time:{
+                type: DataTypes.TIME,
+                defaultValue: DataTypes.NOW,
+            },
+            tech_round_submitted:{
+                type: DataTypes.BOOLEAN,
+                defaultValue: false,
+            },
             createdAt: {
                 type: DataTypes.DATE,
                 defaultValue: DataTypes.NOW,

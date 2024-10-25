@@ -47,6 +47,20 @@ module.exports = {
                 allowNull: true,
                 defaultValue: 'pending',
             },
+            tech_round_start_time:{
+                allowNull: true,
+                type: Sequelize.DATE,
+                defaultValue: Sequelize.NOW,
+            },
+            total_tech_round_time:{
+                allowNull: true,
+                type: Sequelize.TIME,
+                defaultValue: Sequelize.NOW,
+            },
+            tech_round_submitted:{
+                type: Sequelize.BOOLEAN,
+                defaultValue: false,
+            },
             createdAt: {
                 allowNull: false,
                 type: Sequelize.DATE,

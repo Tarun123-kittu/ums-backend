@@ -197,6 +197,7 @@ router.put("/start_test", technicalQuestionsController.start_test)
 router.put("/technical_round_result", authenticateToken, technicalQuestionsController.technical_round_result)
 router.get("/get_lead_technical_response", authenticateToken, technicalQuestionsController.get_lead_technical_response)
 router.put("/check_lead_answer", authenticateToken, validateCheckLeadAnswer, technicalQuestionsController.check_lead_answer)
+router.get('/get_tech_round_test_submit_status',authenticateToken,technicalQuestionsController.get_tech_round_test_submit_status)
 
 
 

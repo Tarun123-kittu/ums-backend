@@ -901,7 +901,9 @@ exports.start_test = async (req, res) => {
     const transaction = await sequelize.transaction();
     try {
         const { lead_id } = req.query;
+
         if (!lead_id) return res.status(400).json({ type: "error", message: "Lead required to perform this action" });
+
 
         const check_lead = `
             SELECT name, id, email 
@@ -931,7 +933,7 @@ exports.start_test = async (req, res) => {
             return res.status(400).json({ type: "error", message: "Error while updating the test" });
         }
 
-        const is_status_updated = `UPDATE interviews SET technical_round_result = 'opened' WHERE lead_id = ?`;
+        const is_status_updated = `UPDATE interviews SET technical_round_result = 'opened',tech_round_start_time = NOW() WHERE lead_id = ?`;
         const status_updated = await sequelize.query(is_status_updated, {
             replacements: [lead_id],
             type: sequelize.QueryTypes.UPDATE,
@@ -976,6 +978,7 @@ exports.submit_technical_round = async (req, res) => {
             ORDER BY createdAt DESC
             LIMIT 1;
         `;
+
         const [lastInterview] = await sequelize.query(lastInterviewQuery, {
             replacements: { lead_id },
             type: sequelize.QueryTypes.SELECT
@@ -1006,7 +1009,37 @@ exports.submit_technical_round = async (req, res) => {
                 invalidQuestions
             });
         }
+        const tech_round_start_time = new Date(lastInterview.tech_round_start_time);
+        const currentTime = new Date();
 
+
+        const timeDifferenceSeconds = Math.floor((currentTime - tech_round_start_time) / 1000);
+
+        const seconds = timeDifferenceSeconds;
+        const hours = Math.floor(seconds / 3600).toString().padStart(2, '0');
+        const minutes = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
+        const secs = (seconds % 60).toString().padStart(2, '0');
+        const timeDifferenceFormatted = `${hours}:${minutes}:${secs}`;
+
+        let getSubmitStatusQuery = `SELECT tech_round_submitted FROM interviews WHERE lead_id=${lead_id}`
+        let [getSubmitStatus] = await sequelize.query(getSubmitStatusQuery)
+
+        if(getSubmitStatus[0].tech_round_submitted==1){return res.status(400).json(errorResponse('You have already submitted the test'))}
+
+        const updateTotalTimeQuery = `
+    UPDATE interviews
+    SET total_tech_round_time = :total_tech_round_time,	tech_round_submitted = :tech_round_submitted
+    WHERE lead_id = :lead_id
+`;
+
+
+        await sequelize.query(updateTotalTimeQuery, {
+            replacements: {
+                total_tech_round_time: timeDifferenceFormatted,
+                tech_round_submitted: 1,
+                lead_id: lead_id
+            },
+        });
 
         const insertTechnicalRoundQuery = `
             INSERT INTO technical_round (lead_id, interview_id, question_id, answer,createdAt, updatedAt)
@@ -1139,7 +1172,7 @@ exports.get_lead_technical_response = async (req, res) => {
             type: sequelize.QueryTypes.SELECT
         });
 
-        // Create a map of options by question ID
+
         const optionsMap = options.reduce((map, option) => {
             if (!map[option.question_id]) {
                 map[option.question_id] = [];
@@ -1151,10 +1184,10 @@ exports.get_lead_technical_response = async (req, res) => {
             return map;
         }, {});
 
-        // Build the final result with questions, answers, and options (with option_id)
+
         const result = responses.map(response => {
             const question = questionsMap.get(response.question_id)?.question || 'Unknown question';
-            const optionsForQuestion = optionsMap[response.question_id] || null; // Options will be null for non-objective questions
+            const optionsForQuestion = optionsMap[response.question_id] || null;
 
             return {
                 question_id: response.question_id,
@@ -1167,7 +1200,12 @@ exports.get_lead_technical_response = async (req, res) => {
             };
         });
 
-        return res.status(200).json(result);
+        let getTimeTakenQuery = `SELECT total_tech_round_time FROM interviews WHERE lead_id = ${lead_id}`
+
+        let [takenTime] = await sequelize.query(getTimeTakenQuery)
+
+        return res.status(200).json({ type: "success", timeTaken: takenTime[0].total_tech_round_time, result: result })
+
     } catch (error) {
         console.log("ERROR::", error);
         return res.status(500).json({ message: error.message });
@@ -1242,3 +1280,25 @@ exports.check_lead_answer = async (req, res) => {
 
 
 
+
+
+exports.get_tech_round_test_submit_status = async (req, res) => {
+    try {
+        let interview_id = req.query.interview_id
+
+        if (!interview_id) { return res.status(400).json(errorResponse("Please provide interview id in the query params")) }
+
+        let submitStatus = `SELECT tech_round_submitted FROM interviews WHERE ID = ${interview_id}`
+
+        let [getStatus] = await sequelize.query(submitStatus)
+        let data = {
+            test_submitted: getStatus[0].tech_round_submitted
+        }
+
+        return res.status(200).json(successResponse("Data retrieved successfully", data))
+
+    } catch (error) {
+        console.log("ERROR::", error)
+        return res.status(500).json(errorResponse(error.response))
+    }
+}
