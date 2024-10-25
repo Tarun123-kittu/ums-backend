@@ -225,6 +225,24 @@ exports.create_user = async (req, res) => {
       }
     }
 
+const currentDate = new Date();
+
+const year = currentDate.getFullYear();
+const nextYear = currentDate.getFullYear() + 1;
+const month = (currentDate.getMonth() + 1).toString().padStart(2, '0'); 
+const day = currentDate.getDate().toString().padStart(2, '0');
+const hours = currentDate.getHours().toString().padStart(2, '0');
+const minutes = currentDate.getMinutes().toString().padStart(2, '0');
+const seconds = currentDate.getSeconds().toString().padStart(2, '0');
+
+const formattedDateTime = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+const session = year+"-"+nextYear
+
+    await sequelize.query(
+      `INSERT INTO bank_leaves (employee_id,taken_leave,paid_leave,month_year,session,createdAt,updatedAt) VALUES(?,?,?,?,?,NOW(),NOW())`,
+      {replacements : [user_id[0].user_id,0,1,formattedDateTime,session]}
+    )
+
     await t.commit();
 
 
@@ -749,148 +767,146 @@ exports.delete_employee = async (req, res) => {
 }
 
 
-
-
-
 exports.update_user = async (req, res) => {
   const {
     id, name, username, email, mobile, emergency_contact_relationship, emergency_contact_name,
     emergency_contact, bank_name, account_number, ifsc, increment_date, gender, dob, doj, skype_email,
     ultivic_email, salary, security, total_security, installments, position, department, status,
-    address, documents
+    address, documents, role
   } = req.body;
 
+  if (!id) {
+    return res.status(400).json({ error: "ID is required for updating user" });
+  }
+
+  const transaction = await sequelize.transaction();
+
   try {
-
-    if (!id) {
-      return res.status(400).json(errorResponse("ID is required for updating user"));
-    }
-
-
-    const checkUserQuery = `SELECT * FROM users WHERE id = ?`;
-    const [existingUser] = await sequelize.query(checkUserQuery, {
+    // Step 1: Check if user exists
+    const [existingUser] = await sequelize.query(`SELECT * FROM users WHERE id = ?`, {
       replacements: [id],
       type: sequelize.QueryTypes.SELECT,
+      transaction,
     });
 
     if (!existingUser) {
-      return res.status(404).json(errorResponse("User not found"));
+      return res.status(404).json({ error: "User not found" });
     }
 
-
+    // Step 2: Validate required fields
     const requiredFields = ['name', 'username', 'email', 'mobile', 'gender', 'dob', 'doj', 'position', 'department', 'status', 'address'];
     const missingFields = requiredFields.filter(field => req.body[field] === undefined);
     if (missingFields.length > 0) {
-      return res.status(400).json(errorResponse(`Missing required fields: ${missingFields.join(', ')}`));
+      return res.status(400).json({ error: `Missing required fields: ${missingFields.join(', ')}` });
     }
 
-
+    // Step 3: Prepare fields to update in `users` table
     const fields = [];
     const values = [];
-
-    const handleField = (fieldValue, columnName, defaultValue = null) => {
-      if (fieldValue === "") {
-        fields.push(`${columnName} = ?`);
-        values.push(defaultValue);
-      } else if (fieldValue !== undefined) {
-        fields.push(`${columnName} = ?`);
-        values.push(fieldValue);
+    const addField = (value, column) => {
+      if (value !== undefined) {
+        fields.push(`${column} = ?`);
+        values.push(value === "" ? null : value);
       }
     };
 
-    handleField(name, 'name');
-    handleField(username, 'username');
-    handleField(email, 'email');
-    handleField(mobile, 'mobile');
-    handleField(emergency_contact_relationship, 'emergency_contact_relationship');
-    handleField(emergency_contact_name, 'emergency_contact_name');
-    handleField(emergency_contact, 'emergency_contact');
-    handleField(bank_name, 'bank_name');
-    handleField(account_number, 'account_number');
-    handleField(ifsc, 'ifsc');
-    handleField(increment_date, 'increment_date');
-    handleField(gender, 'gender');
-    handleField(dob, 'dob');
-    handleField(doj, 'doj');
-    handleField(skype_email, 'skype_email');
-    handleField(ultivic_email, 'ultivic_email');
-    handleField(salary, 'salary');
-    handleField(security, 'security');
-    handleField(total_security, 'total_security');
-    handleField(installments, 'installments');
-    handleField(position, 'position');
-    handleField(department, 'department');
-    handleField(status, 'status');
-    handleField(address, 'address');
+    addField(name, 'name');
+    addField(username, 'username');
+    addField(email, 'email');
+    addField(mobile, 'mobile');
+    addField(emergency_contact_relationship, 'emergency_contact_relationship');
+    addField(emergency_contact_name, 'emergency_contact_name');
+    addField(emergency_contact, 'emergency_contact');
+    addField(bank_name, 'bank_name');
+    addField(account_number, 'account_number');
+    addField(ifsc, 'ifsc');
+    addField(increment_date, 'increment_date');
+    addField(gender, 'gender');
+    addField(dob, 'dob');
+    addField(doj, 'doj');
+    addField(skype_email, 'skype_email');
+    addField(ultivic_email, 'ultivic_email');
+    addField(salary, 'salary');
+    addField(security, 'security');
+    addField(total_security, 'total_security');
+    addField(installments, 'installments');
+    addField(position, 'position');
+    addField(department, 'department');
+    addField(status, 'status');
+    addField(address, 'address');
+    addField(role, 'role');
 
-    if (fields.length === 0) {
-      return res.status(400).json(errorResponse("No fields to update"));
+    // Update user details if there are fields to update
+    if (fields.length > 0) {
+      const updateUserQuery = `UPDATE users SET ${fields.join(', ')} WHERE id = ?`;
+      await sequelize.query(updateUserQuery, {
+        replacements: [...values, id],
+        transaction,
+      });
     }
 
-
-    const updateUserQuery = `
-      UPDATE users
-      SET ${fields.join(', ')}
-      WHERE id = ?
-    `;
-
-
-    values.push(id);
-
-
-    await sequelize.query(updateUserQuery, {
-      replacements: values,
-    });
-
-
-
-    if (Array.isArray(documents)) {
-
-      const getDocumentsQuery = `SELECT document_name FROM documents WHERE user_id = ?`;
-      const existingDocuments = await sequelize.query(getDocumentsQuery, {
-        replacements: [id],
+    // Step 4: Update specific user role in `user_roles` if role changed
+    if (role && role !== existingUser.role) {
+      // Get the current role ID for the user
+      const [currentRoleData] = await sequelize.query(`SELECT role_id FROM user_roles WHERE user_id = ? AND role_id = (SELECT id FROM roles WHERE role = ?)`, {
+        replacements: [id, existingUser.role],
         type: sequelize.QueryTypes.SELECT,
+        transaction,
       });
 
-      const existingDocumentNames = existingDocuments.map(doc => doc.document_name);
-
-
-      const newDocuments = documents.filter(doc => !existingDocumentNames.includes(doc));
-
-
-      const documentsToRemove = existingDocumentNames.filter(doc => !documents.includes(doc));
-
-
-      if (newDocuments.length > 0) {
-        const insertDocumentsQuery = `INSERT INTO documents (user_id, document_name, createdAt, updatedAt) VALUES ${newDocuments.map(() => "(?, ?, NOW(), NOW())").join(", ")}`;
-
-        const insertValues = newDocuments.flatMap(doc => [id, doc]);
-
-        await sequelize.query(insertDocumentsQuery, {
-          replacements: insertValues,
+      // If role found and differs from the new role, update
+      if (currentRoleData && role !== existingUser.role) {
+        const [newRoleData] = await sequelize.query(`SELECT id FROM roles WHERE role = ?`, {
+          replacements: [role],
+          type: sequelize.QueryTypes.SELECT,
+          transaction,
         });
-      }
 
+        console.log(currentRoleData,newRoleData,"this is the new role data")
 
-      if (documentsToRemove.length > 0) {
-        const deleteDocumentsQuery = `DELETE FROM documents WHERE user_id = ? AND document_name IN (${documentsToRemove.map(() => "?").join(", ")})`;
-        await sequelize.query(deleteDocumentsQuery, {
-          replacements: [id, ...documentsToRemove],
-        });
+        if (newRoleData) {
+          await sequelize.query(`UPDATE user_roles SET role_id = ? WHERE user_id = ? AND role_id = ?`, {
+            replacements: [newRoleData.id, id, currentRoleData.role_id],
+            transaction,
+          });
+        }
       }
     }
 
-    res.status(200).json(successResponse("User updated successfully"));
+    // Step 5: Handle document updates
+    if (Array.isArray(documents)) {
+      const existingDocs = await sequelize.query(`SELECT document_name FROM documents WHERE user_id = ?`, {
+        replacements: [id],
+        type: sequelize.QueryTypes.SELECT,
+        transaction,
+      });
+
+      const existingDocNames = existingDocs.map(doc => doc.document_name);
+      const docsToAdd = documents.filter(doc => !existingDocNames.includes(doc));
+      const docsToRemove = existingDocNames.filter(doc => !documents.includes(doc));
+
+      // Add new documents
+      if (docsToAdd.length > 0) {
+        const insertValues = docsToAdd.flatMap(doc => [id, doc]);
+        const insertQuery = `INSERT INTO documents (user_id, document_name, createdAt, updatedAt) VALUES ${docsToAdd.map(() => "(?, ?, NOW(), NOW())").join(", ")}`;
+        await sequelize.query(insertQuery, { replacements: insertValues, transaction });
+      }
+
+      // Remove obsolete documents
+      if (docsToRemove.length > 0) {
+        const deleteQuery = `DELETE FROM documents WHERE user_id = ? AND document_name IN (${docsToRemove.map(() => "?").join(", ")})`;
+        await sequelize.query(deleteQuery, { replacements: [id, ...docsToRemove], transaction });
+      }
+    }
+
+    await transaction.commit();
+    res.status(200).json({ message: "User updated successfully" });
   } catch (error) {
-    console.error("ERROR::", error);
+    await transaction.rollback();
+    console.error("Error updating user:", error);
     res.status(500).json({ error: "Error updating user", details: error.message });
   }
 };
-
-
-
-
-
 
 
 
