@@ -198,8 +198,8 @@ exports.get_employees_working_time = async (req, res) => {
             JOIN 
                 users u ON u.id = a.user_id
             WHERE 
-                a.status = 'PRESENT'
-                WHERE u.is_disabled = 0
+                a.status = 'PRESENT' AND
+                 u.is_disabled = 0
             AND 
                 a.date = :currentDate;  -- Get records only for today
         `;

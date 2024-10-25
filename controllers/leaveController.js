@@ -316,6 +316,7 @@ exports.calculate_pending_leaves_for_selected_user = async (req, res) => {
 exports.update_pending_leave = async (req, res) => {
     const { leave_id, status, remark, user_id, leave_count, email, name, from_date, to_date } = req.body;
     const transaction = await sequelize.transaction();
+   
 
     try {
         const update_leave_query = `UPDATE leaves SET status = ?, remark = ? WHERE id = ?`;
@@ -334,7 +335,7 @@ exports.update_pending_leave = async (req, res) => {
             const select_current_month_leaves = `
                 SELECT * FROM bank_leaves 
                 WHERE employee_id = ? 
-                AND MONTH(createdAt) = MONTH(NOW()) 
+                 AND MONTH(createdAt) = MONTH(NOW()) 
                 AND YEAR(createdAt) = YEAR(NOW())`;
 
             const [selected_leave_details] = await sequelize.query(select_current_month_leaves, {
@@ -342,6 +343,8 @@ exports.update_pending_leave = async (req, res) => {
                 type: sequelize.QueryTypes.SELECT,
                 transaction
             });
+
+            console.log(selected_leave_details,"this is the user leave details")
 
             if (selected_leave_details) {
                 const bank_leave_id = selected_leave_details.id;
