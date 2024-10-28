@@ -103,12 +103,12 @@ exports.apply_leave = async (req, res) => {
         }
 
         let insertLeaveQuery = `
-            INSERT INTO leaves (user_id, from_date, to_date, count, description, type, sandwich,createdAt)
-            VALUES (?, ?, ?, ?, ?, ?, ?,?)
+            INSERT INTO leaves (user_id, from_date, to_date, count, description, type, sandwich,createdAt,updatedAt)
+            VALUES (?, ?, ?, ?, ?, ?, ?,?,?)
         `;
 
         await sequelize.query(insertLeaveQuery, {
-            replacements: [user_id, from_date, to_date, leaveDays, description, type, sandwich, current_time],
+            replacements: [user_id, from_date, to_date, leaveDays, description, type, sandwich, current_time,current_time],
             type: sequelize.QueryTypes.INSERT,
             transaction: t
         });
@@ -316,7 +316,7 @@ exports.calculate_pending_leaves_for_selected_user = async (req, res) => {
 exports.update_pending_leave = async (req, res) => {
     const { leave_id, status, remark, user_id, leave_count, email, name, from_date, to_date } = req.body;
     const transaction = await sequelize.transaction();
-   
+
 
     try {
         const update_leave_query = `UPDATE leaves SET status = ?, remark = ? WHERE id = ?`;
@@ -344,7 +344,7 @@ exports.update_pending_leave = async (req, res) => {
                 transaction
             });
 
-            console.log(selected_leave_details,"this is the user leave details")
+            console.log(selected_leave_details, "this is the user leave details")
 
             if (selected_leave_details) {
                 const bank_leave_id = selected_leave_details.id;
@@ -631,7 +631,7 @@ exports.leave_bank_report = async (req, res) => {
             replacements,
         });
 
-        console.log("Query Result:", all_bank_records);
+
 
 
         if (!all_bank_records || all_bank_records.length === 0) {
@@ -905,3 +905,34 @@ exports.update_user_leave_bank = async (req, res) => {
 
 
 
+
+
+exports.change_leave_status = async (req, res) => {
+    try {
+        let leaveId = req.body.leaveId
+        let userId = req.result.user_id
+        
+        let transaction = sequelize.transaction()
+
+        if (!leaveId) {
+            return res.status(400).json(errorResponse("Please provide leave Id"))
+        }
+        let isLeaveExistQuery = `SELECT id FROM leaves WHERE id = ${leaveId}`
+
+        let [existingLeave] = await sequelize.query(isLeaveExistQuery)
+        if (existingLeave.length < 1) {
+            return res.status(400).json(errorResponse("Leave not exist with this leave id"))
+        }
+
+        
+        let [leaveCancel] = await sequelize.query(
+            `UPDATE leaves 
+             SET status = 'CANCELLED', status_changed_by = ${userId}, updatedAt = NOW()
+             WHERE id = ${leaveId}`)
+        
+        return res.status(200).json(successResponse('Status changed successfully'))
+    } catch (error) {
+        console.log('ERROR::', error)
+        return res.status(500).json(errorResponse(error.message))
+    }
+}
