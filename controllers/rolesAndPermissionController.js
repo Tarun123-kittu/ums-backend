@@ -215,7 +215,8 @@ exports.update_permissions_assigned_to_role = async (req, res) => {
                             can_view = ${obj.can_view}, 
                             can_create = ${obj.can_create}, 
                             can_update = ${obj.can_update}, 
-                            can_delete = ${obj.can_delete}
+                            can_delete = ${obj.can_delete},
+                            updatedAt = NOW()
                         WHERE 
                             role_id = ${obj.role_id} AND 
                             permission_id = ${obj.permission_id}
@@ -280,7 +281,7 @@ exports.disabled_role = async (req, res) => {
 
     try {
 
-        const disableRoleQuery = `UPDATE roles SET is_disabled = true WHERE id = ?`;
+        const disableRoleQuery = `UPDATE roles SET is_disabled = true,updatedAt = NOW() WHERE id = ?`;
         const [result] = await sequelize.query(disableRoleQuery, {
             replacements: [role_id],
             type: sequelize.QueryTypes.UPDATE,
@@ -311,7 +312,7 @@ exports.disabled_role = async (req, res) => {
 
 
         if (isRoleExistInRolesPermissions.length > 0) {
-            const disableRoleInRolesPermissions = `UPDATE roles_permissions SET is_disabled = true WHERE role_id = ?`;
+            const disableRoleInRolesPermissions = `UPDATE roles_permissions SET is_disabled  = true ,updatedAt = NOW()   WHERE role_id = ?`;
             const [resultInRolesPermissions] = await sequelize.query(disableRoleInRolesPermissions, {
                 replacements: [role_id],
                 type: sequelize.QueryTypes.UPDATE,
@@ -326,7 +327,7 @@ exports.disabled_role = async (req, res) => {
 
 
         if (isRoleExistInUserRoles.length > 0) {
-            const disableRoleInUserRoles = `UPDATE user_roles SET is_disabled = true WHERE role_id = ?`;
+            const disableRoleInUserRoles = `UPDATE user_roles SET is_disabled = true,updatedAt = NOW()   WHERE role_id = ?`;
             const [resultInUserRoles] = await sequelize.query(disableRoleInUserRoles, {
                 replacements: [role_id],
                 type: sequelize.QueryTypes.UPDATE,
