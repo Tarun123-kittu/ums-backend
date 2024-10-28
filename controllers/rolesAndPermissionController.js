@@ -535,7 +535,7 @@ exports.get_all_roles = async (req, res) => {
 
 exports.get_permissions = async (req, res) => {
     try {
-       let getPermissionsQuery = `SELECT permission, id as permission_id FROM permissions`
+       let getPermissionsQuery = `SELECT permission, id as permission_id FROM permissions WHERE is_disabled = false`
 
        let [allPermissions] = await sequelize.query(getPermissionsQuery)
 
