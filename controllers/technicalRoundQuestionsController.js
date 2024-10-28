@@ -1046,7 +1046,7 @@ exports.submit_technical_round = async (req, res) => {
 
         const updateTotalTimeQuery = `
     UPDATE interviews
-    SET total_tech_round_time = :total_tech_round_time,	tech_round_submitted = :tech_round_submitted
+    SET total_tech_round_time = :total_tech_round_time,	tech_round_submitted = :tech_round_submitted,technical_round_result = 'submitted'
     WHERE lead_id = :lead_id
 `;
 

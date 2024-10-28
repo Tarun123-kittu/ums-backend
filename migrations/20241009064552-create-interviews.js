@@ -25,7 +25,7 @@ module.exports = {
                 defaultValue: 'pending',
             },
             technical_round_result: {
-                type: Sequelize.ENUM('selected', 'rejected', 'pending', 'on hold','opened'),
+                type: Sequelize.ENUM('selected', 'rejected', 'pending', 'on hold','opened','submitted'),
                 allowNull: true,
                 defaultValue: 'pending',
             },
