@@ -219,6 +219,9 @@ exports.get_hr_assign_questions_to_lead = async (req, res) => {
   }
 };
 
+
+
+
 exports.get_hr_round_candidate = async (req, res) => {
   try {
     const { pageNumber = 1, pageSize = 10, profile, experience, result_status } = req.query;
@@ -269,7 +272,17 @@ exports.get_hr_round_candidate = async (req, res) => {
         SELECT 
             i.id, 
             i.name, 
+            i.phone_number, 
+            i.email, 
+            i.gender, 
+            i.dob, 
             i.experience, 
+            i.current_salary, 
+            i.expected_salary,
+            i.last_company,
+            i.state,
+            i.house_address,
+            i.in_round,    
             l.language AS profile, 
             iv.hr_round_result,
             iv.id AS interview_id

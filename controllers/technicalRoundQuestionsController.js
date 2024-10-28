@@ -631,8 +631,9 @@ exports.delete_objective = async (req, res) => {
 
 
 exports.get_all_technical_round_leads = async (req, res) => {
+    const t = await sequelize.transaction();
     try {
-        const t = await sequelize.transaction();
+        
         const { page = 1, limit = 10, profile, experience, result_status } = req.query;
 
 
@@ -681,9 +682,23 @@ exports.get_all_technical_round_leads = async (req, res) => {
 
 
         const all_technical_round_leads = `
-            SELECT il.id, il.name, il.experience, il.profile, i.technical_round_result, i.id AS interview_id
+            SELECT 
+            il.id,
+            il.name,
+            il.phone_number,
+            il.email,
+            il.gender,
+            il.dob,
+            il.experience, 
+            il.profile,
+            il.current_salary,
+            il.expected_salary,
+            l.language AS profile, 
+            i.technical_round_result, 
+            i.id AS interview_id
             FROM interview_leads il
             JOIN interviews i ON i.lead_id = il.id
+            JOIN languages l ON l.id  = il.profile
             ${whereClause}
             ORDER BY il.createdAt DESC  
             LIMIT ${limit} OFFSET ${offset}
