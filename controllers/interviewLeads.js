@@ -406,15 +406,29 @@ exports.get_face_to_face_round_leads = async (req, res) => {
 
 
         const all_technical_round_leads = `
-            SELECT il.id, il.name, il.experience, l.language AS profile, il.assigned_test_series, il.expected_salary, 
-                   i.face_to_face_result, i.id AS interview_id, l.id AS language_id
-            FROM interview_leads il
-            JOIN interviews i ON i.lead_id = il.id
-            JOIN languages l ON l.id = il.profile
-            ${whereClause}
-            ORDER BY il.createdAt DESC  
-            LIMIT ${limit} OFFSET ${offset}
-        `;
+        SELECT 
+            il.id, 
+            il.name, 
+            il.phone_number, 
+            il.email, 
+            il.gender, 
+            il.dob, 
+            il.experience, 
+            l.language AS profile, 
+            il.assigned_test_series, 
+            il.current_salary, 
+            il.expected_salary, 
+            i.face_to_face_result, 
+            i.id AS interview_id, 
+            l.id AS language_id
+        FROM interview_leads il
+        JOIN interviews i ON i.lead_id = il.id
+        JOIN languages l ON l.id = il.profile
+        ${whereClause}
+        ORDER BY il.createdAt DESC  
+        LIMIT ${limit} OFFSET ${offset}
+    `;
+
 
         const results = await sequelize.query(all_technical_round_leads, {
             type: sequelize.QueryTypes.SELECT,
@@ -500,16 +514,29 @@ exports.get_final_round_leads = async (req, res) => {
 
 
         const all_final_round_leads = `
-            SELECT il.id, il.name, il.experience, l.language AS profile, 
-                   il.assigned_test_series, il.expected_salary, 
-                   i.final_result, i.id AS interview_id, l.id AS language_id
-            FROM interview_leads il
-            JOIN interviews i ON i.lead_id = il.id
-            JOIN languages l ON l.id = il.profile
-            ${whereClause}
-            ORDER BY il.createdAt DESC  
-            LIMIT ${limit} OFFSET ${offset}
-        `;
+        SELECT 
+            il.id, 
+            il.name, 
+            il.phone_number, 
+            il.email, 
+            il.gender, 
+            il.dob, 
+            il.experience, 
+            l.language AS profile, 
+            il.assigned_test_series, 
+            il.current_salary, 
+            il.expected_salary, 
+            i.final_result, 
+            i.id AS interview_id, 
+            l.id AS language_id
+        FROM interview_leads il
+        JOIN interviews i ON i.lead_id = il.id
+        JOIN languages l ON l.id = il.profile
+        ${whereClause}
+        ORDER BY il.createdAt DESC  
+        LIMIT ${limit} OFFSET ${offset}
+    `;
+
 
         const results = await sequelize.query(all_final_round_leads, {
             type: sequelize.QueryTypes.SELECT,
