@@ -19,9 +19,14 @@ exports.get_user_permissions = async (req, res) => {
         return res.status(200).json(successResponse("successfully fetched.", permissions))
 
     } catch (error) {
+        console.log('ERROR::',error)
         return res.status(500).json(errorResponse(error.message))
     }
 }
+
+
+
+
 
 exports.get_roles_and_users = async (req, res) => {
     try {
@@ -63,9 +68,15 @@ exports.get_roles_and_users = async (req, res) => {
         return res.status(200).json(successResponse('Successfully fetched.', rolesWithTheirUsers));
 
     } catch (error) {
+        console.log('ERROR::',error)
         return res.status(500).json(errorResponse(error.message));
     }
 };
+
+
+
+
+
 
 exports.assign_role = async (req, res) => {
     const { user_id, role_id } = req.body;
@@ -100,9 +111,14 @@ exports.assign_role = async (req, res) => {
         return res.status(200).json(successResponse("Role assigned to the user successfully."));
 
     } catch (error) {
+        console.log('ERROR::',error)
         return res.status(500).json(errorResponse(error.message));
     }
 };
+
+
+
+
 
 exports.assign_new_permissions_to_new_role = async (req, res) => {
     const { permission_data, role, user_id } = req.body;
@@ -111,7 +127,7 @@ exports.assign_new_permissions_to_new_role = async (req, res) => {
 
     try {
 
-        const add_new_role_query = `INSERT INTO roles (role) VALUES (?)`;
+        const add_new_role_query = `INSERT INTO roles (role,createdAt,updatedAt) VALUES (?,NOW(),NOW())`;
         const [insert_role_result] = await sequelize.query(add_new_role_query, {
             replacements: [role],
             type: sequelize.QueryTypes.INSERT,
@@ -124,9 +140,9 @@ exports.assign_new_permissions_to_new_role = async (req, res) => {
 
 
         if (user_id?.length > 0) {
-            const userRolesValues = user_id.map(id => `(${id}, ${role_id})`).join(', ');
+            const userRolesValues = user_id.map(id => `(${id}, ${role_id}, NOW(), NOW())`).join(', ');
             const insert_user_roles_query = `
-                INSERT INTO user_roles (user_id, role_id ,created_at = CURDATE(),updated_at=CURDATE()) 
+                INSERT INTO user_roles (user_id, role_id, createdAt, updatedAt)
                 VALUES ${userRolesValues}
             `;
             await sequelize.query(insert_user_roles_query, {
@@ -134,15 +150,14 @@ exports.assign_new_permissions_to_new_role = async (req, res) => {
                 transaction
             });
         }
-
-
+        
 
         const permissionValues = permission_data.map(obj =>
-            `(${role_id}, ${obj.permission_id}, ${obj.can_view ? 1 : 0}, ${obj.can_create ? 1 : 0}, ${obj.can_update ? 1 : 0}, ${obj.can_delete ? 1 : 0})`
+            `(${role_id}, ${obj.permission_id}, ${obj.can_view ? 1 : 0}, ${obj.can_create ? 1 : 0}, ${obj.can_update ? 1 : 0}, ${obj.can_delete ? 1 : 0}, NOW(), NOW())`
         ).join(', ');
-
+        
         const insert_permissions_query = `
-            INSERT INTO roles_permissions (role_id, permission_id, can_view, can_create, can_update, can_delete)
+            INSERT INTO roles_permissions (role_id, permission_id, can_view, can_create, can_update, can_delete, createdAt, updatedAt)
             VALUES ${permissionValues}
         `;
 
@@ -159,7 +174,7 @@ exports.assign_new_permissions_to_new_role = async (req, res) => {
         });
 
     } catch (error) {
-
+        console.log('ERROR::',error)
         if (error.message.includes('foreign key constraint fails')) {
             res.status(400).json({
                 type: "error",
@@ -173,6 +188,10 @@ exports.assign_new_permissions_to_new_role = async (req, res) => {
         }
     }
 };
+
+
+
+
 
 exports.update_permissions_assigned_to_role = async (req, res) => {
     const { permission_data } = req.body;
@@ -242,6 +261,10 @@ exports.update_permissions_assigned_to_role = async (req, res) => {
         }
     }
 };
+
+
+
+
 
 exports.disabled_role = async (req, res) => {
     const { role_id } = req.body;
@@ -378,6 +401,11 @@ exports.delete_user_role = async (req, res) => {
     }
 };
 
+
+
+
+
+
 exports.get_roles_permissions = async (req, res) => {
     const user_id = req.result.user_id;
     const id = req.query.id;
@@ -443,6 +471,11 @@ exports.get_roles_permissions = async (req, res) => {
     }
 };
 
+
+
+
+
+
 exports.get_role_assigned_to_users = async (req, res) => {
     const role_id = req.query.role_id;
     if (!role_id) {
@@ -477,6 +510,11 @@ exports.get_role_assigned_to_users = async (req, res) => {
     }
 };
 
+
+
+
+
+
 exports.get_all_roles = async (req, res) => {
     try {
         const get_all_roles = `SELECT id,role FROM roles WHERE is_disabled = false`;
@@ -496,7 +534,7 @@ exports.get_all_roles = async (req, res) => {
 
 exports.get_permissions = async (req, res) => {
     try {
-       let getPermissionsQuery = `SELECT permission FROM permissions`
+       let getPermissionsQuery = `SELECT permission, id as permission_id FROM permissions`
 
        let [allPermissions] = await sequelize.query(getPermissionsQuery)
 
