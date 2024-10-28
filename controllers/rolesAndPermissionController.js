@@ -494,3 +494,15 @@ exports.get_all_roles = async (req, res) => {
 
 
 
+exports.get_permissions = async (req, res) => {
+    try {
+       let getPermissionsQuery = `SELECT permission FROM permissions`
+
+       let [allPermissions] = await sequelize.query(getPermissionsQuery)
+
+       return res.status(200).json(successResponse('Data retrieved successfully',allPermissions))
+    } catch (error) {
+        console.log('ERROR::', error)
+        return res.status(500).json(errorResponse(error.message))
+    }
+}

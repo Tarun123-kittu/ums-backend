@@ -83,6 +83,7 @@ router.delete("/delete_user_role", authenticateToken, validateDeleteUserRole, ro
 router.get("/get_roles_permissions", authenticateToken, rolesPermissionsController.get_roles_permissions)
 router.get("/get_role_assigned_to_users", authenticateToken, rolesPermissionsController.get_role_assigned_to_users)
 router.get("/get_all_roles", authenticateToken, rolesPermissionsController.get_all_roles)
+router.get('/get_permissions',authenticateToken,rolesPermissionsController.get_permissions)
 
 
 
