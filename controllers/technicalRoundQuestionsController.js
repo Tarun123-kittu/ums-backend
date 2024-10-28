@@ -1288,9 +1288,11 @@ exports.get_tech_round_test_submit_status = async (req, res) => {
 
         if (!interview_id) { return res.status(400).json(errorResponse("Please provide interview id in the query params")) }
 
-        let submitStatus = `SELECT tech_round_submitted FROM interviews WHERE ID = ${interview_id}`
+        let submitStatus = `SELECT tech_round_submitted FROM interviews WHERE lead_id = ${interview_id}`
 
         let [getStatus] = await sequelize.query(submitStatus)
+
+        if(!getStatus) return res.status(400).json(errorResponse("Can't find interview id"))
         let data = {
             test_submitted: getStatus[0].tech_round_submitted
         }
@@ -1299,6 +1301,6 @@ exports.get_tech_round_test_submit_status = async (req, res) => {
 
     } catch (error) {
         console.log("ERROR::", error)
-        return res.status(500).json(errorResponse(error.response))
+        return res.status(500).json(errorResponse(error.message))
     }
 }
