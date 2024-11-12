@@ -633,7 +633,7 @@ exports.delete_objective = async (req, res) => {
 exports.get_all_technical_round_leads = async (req, res) => {
     const t = await sequelize.transaction();
     try {
-        
+
         const { page = 1, limit = 10, profile, experience, result_status } = req.query;
 
 
@@ -1042,7 +1042,7 @@ exports.submit_technical_round = async (req, res) => {
         let getSubmitStatusQuery = `SELECT tech_round_submitted FROM interviews WHERE lead_id=${lead_id}`
         let [getSubmitStatus] = await sequelize.query(getSubmitStatusQuery)
 
-        if(getSubmitStatus[0].tech_round_submitted==1){return res.status(400).json(errorResponse('You have already submitted the test'))}
+        if (getSubmitStatus[0].tech_round_submitted == 1) { return res.status(400).json(errorResponse('You have already submitted the test')) }
 
         const updateTotalTimeQuery = `
     UPDATE interviews
@@ -1310,7 +1310,7 @@ exports.get_tech_round_test_submit_status = async (req, res) => {
 
         let [getStatus] = await sequelize.query(submitStatus)
 
-        if(!getStatus) return res.status(400).json(errorResponse("Can't find interview id"))
+        if (!getStatus) return res.status(400).json(errorResponse("Can't find interview id"))
         let data = {
             test_submitted: getStatus[0].tech_round_submitted
         }

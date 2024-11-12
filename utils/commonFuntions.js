@@ -11,9 +11,10 @@ const moment = require('moment-timezone');
 
 
 
-const createToken = async (roles, user_id, username, email) => {
+
+const createToken = async (roles, user_id, username, email,working_schedule) => {
     return new Promise((resolve, reject) => {
-        jwt.sign({ roles, user_id, username, email }, process.env.JWT_SECRET, (err, token) => {
+        jwt.sign({ roles, user_id, username, email,working_schedule }, process.env.JWT_SECRET, (err, token) => {
             if (err) {
                 reject(err);
             } else {
@@ -99,6 +100,7 @@ const send_email = async (options) => {
 
 
 function find_the_total_time(mark_time) {
+
     let current_time = moment().tz('Asia/Kolkata').format('YYYY-MM-DD HH:mm:ss');
     let current_date = current_time.split(' ')[0];
 
@@ -106,6 +108,7 @@ function find_the_total_time(mark_time) {
 
     let current_moment = moment(current_time, 'YYYY-MM-DD HH:mm:ss');
     let mark_moment = moment(mark_time_full, 'YYYY-MM-DD HH:mm:ss');
+    
 
     let duration = moment.duration(current_moment.diff(mark_moment));
 
@@ -115,14 +118,30 @@ function find_the_total_time(mark_time) {
 
     let time_difference = `${hours}:${minutes}:${seconds}`
 
-    return time_difference;
+    return time_difference;  
 }
 
 
 
 
 
+function convertToSeconds(time) {
+    const [hours, minutes, seconds] = time.split(':').map(Number);
+    return (hours * 3600) + (minutes * 60) + seconds;
+}
 
-module.exports = { createToken, passwordResetToken, encrypt_password, password_compare, send_email, find_the_total_time }
+
+function convertToHHMMSS(seconds) {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+}
+
+
+
+
+
+module.exports = { createToken, passwordResetToken, encrypt_password, password_compare, send_email, find_the_total_time,convertToSeconds,convertToHHMMSS }
 
 

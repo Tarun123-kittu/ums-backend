@@ -17,6 +17,7 @@ const createUserValidator = [
     check("password", "Please enter your password.").not().isEmpty(),
     check("address", "Address is required.").not().isEmpty(),
     check("role", "Role is required.").not().isEmpty(),
+    check("working_schedule","Working schedule is required").not().isEmpty(),
 
     // // Optional fields
     // check("emergency_contact_relationship").optional().not().isEmpty().withMessage("Emergency contact relationship is required."),

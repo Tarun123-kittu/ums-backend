@@ -29,6 +29,7 @@ exports.create_user = async (req, res) => {
       confirm_password,
       address,
       role,
+      working_schedule,
 
       emergency_contact_relationship,
       emergency_contact_name,
@@ -87,6 +88,7 @@ exports.create_user = async (req, res) => {
       'password',
       'address',
       'role',
+      'working_schedule',
       'position',
       'department',
       'status',
@@ -105,6 +107,7 @@ exports.create_user = async (req, res) => {
       hashedPassword,
       address,
       role,
+      working_schedule,
       position,
       department,
       status,
@@ -276,6 +279,7 @@ exports.login = async (req, res) => {
       u.id AS user_id, 
       u.username, 
       u.password, 
+      u.working_schedule,
       r.role AS role_name, 
       p.permission AS permission_name,
       rp.can_view,
@@ -304,7 +308,7 @@ exports.login = async (req, res) => {
 
     if (!userRolesData || userRolesData.length === 0) { return res.status(400).json({ message: "User with this email does not exist.", type: 'error' }); }
 
-    const { user_id, username, password: hashedPassword } = userRolesData[0];
+    const { user_id, username, password: hashedPassword,working_schedule } = userRolesData[0];
 
     const isPasswordTrue = await password_compare(hashedPassword, password);
 
@@ -327,15 +331,16 @@ exports.login = async (req, res) => {
       return acc;
     }, []);
 
-
-    const token = await createToken(roles, user_id, username, email);
+   
+    const token = await createToken(roles, user_id, username, email,working_schedule);
 
     return res.status(200).json({
       type: "success",
       message: "Logged in successfully",
       token,
       roles,
-      id: user_id
+      id: user_id,
+      working_schedule  
     });
 
   } catch (error) {
@@ -349,6 +354,7 @@ exports.login = async (req, res) => {
 
 
 exports.forgot_password = async (req, res) => {
+
   const { email } = req.body;
   const getUser = `SELECT * FROM users WHERE email = ? AND is_disabled = false`;
 

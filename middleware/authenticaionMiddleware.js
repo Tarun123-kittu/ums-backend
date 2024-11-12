@@ -14,7 +14,7 @@ let verifyToken = async (req, res, next) => {
             token = token.split(' ')[1];
 
             let decoded = jwt.verify(token, config.development.secret_key);
-            
+        
             const { user_id } = decoded;
          
             let roles = await getLatestRoles(user_id)

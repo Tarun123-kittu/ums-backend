@@ -1,3 +1,4 @@
+
 let { sequelize } = require('../models')
 let { errorResponse, successResponse } = require("../utils/responseHandler")
 
@@ -59,7 +60,8 @@ exports.create_series = async (req, res) => {
 exports.get_all_series = async (req, res) => {
     try {
         let id = req.query.languageId;
-
+        let wokringSchedule = req.result.working_schedule
+       
 
         const MIN_OBJECTIVE = 3;
         const MIN_SUBJECTIVE = 3;

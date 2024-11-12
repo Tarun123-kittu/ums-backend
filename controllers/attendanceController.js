@@ -1,5 +1,5 @@
 const { sequelize } = require('../models');
-const { find_the_total_time } = require("../utils/commonFuntions")
+const { find_the_total_time, convertToSeconds, convertToHHMMSS } = require("../utils/commonFuntions")
 const { errorResponse, successResponse } = require('../utils/responseHandler');
 const moment = require('moment-timezone');
 
@@ -48,12 +48,12 @@ exports.mark_attendance = async (req, res) => {
 
 exports.unmark_attendance = async (req, res) => {
     const user_id = req.result.user_id
-    console.log(user_id)
+
     const { report, logout_device, logout_mobile } = req.body;
     let current_time = moment().tz('Asia/Kolkata').format('YYYY-MM-DD HH:mm:ss');
     let current_data = moment().tz('Asia/Kolkata').format('YYYY-MM-DD')
     try {
-        const is_user_mark_attendance_today_query = `SELECT date,in_time,out_time FROM attendances WHERE date = ? AND user_id = ?`;
+        const is_user_mark_attendance_today_query = `SELECT id,date,in_time,out_time FROM attendances WHERE date = ? AND user_id = ?`;
         const is_user_mark_attendance_today = await sequelize.query(is_user_mark_attendance_today_query, {
             replacements: [current_data, user_id],
             type: sequelize.QueryTypes.SELECT
@@ -70,8 +70,26 @@ exports.unmark_attendance = async (req, res) => {
             return res.status(400).json(errorResponse("You already unmark your attendance Thanks !!"));
         }
 
-        let total_time = find_the_total_time(is_user_mark_attendance_today[0]?.in_time)
-        console.log(total_time)
+        let total_Time = find_the_total_time(is_user_mark_attendance_today[0]?.in_time)
+       
+        let total_time = convertToSeconds(total_Time)
+
+
+        let getTotalBreakHoursQuery = `
+        SELECT COALESCE(SEC_TO_TIME(SUM(TIME_TO_SEC(break_totaltime))), '00:00:00') AS total_break_time
+        FROM breaks
+        WHERE attendance_id = ${is_user_mark_attendance_today[0]?.id} 
+        AND break_totaltime IS NOT NULL
+    `;
+
+        let [totalBreakTime] = await sequelize.query(getTotalBreakHoursQuery);
+        let break_time_in_seconds = convertToSeconds(totalBreakTime[0].total_break_time);
+        let remainingTimeInSeconds = total_time - break_time_in_seconds;
+
+    
+        let totalCaldulatedTime = convertToHHMMSS(remainingTimeInSeconds);
+
+
         const unmark_attendance_query = `UPDATE attendances
         SET 
             out_time = ?, 
@@ -84,7 +102,7 @@ exports.unmark_attendance = async (req, res) => {
            user_id = ?`;
 
         const result = await sequelize.query(unmark_attendance_query, {
-            replacements: [current_time, report, total_time, logout_device, logout_mobile, current_data, user_id],
+            replacements: [current_time, report, totalCaldulatedTime, logout_device, logout_mobile, current_data, user_id],
             type: sequelize.QueryTypes.UPDATE
         });
         if (!result) return res.status(400).json(errorResponse("Error while unmarking attendance!!"));
@@ -96,6 +114,10 @@ exports.unmark_attendance = async (req, res) => {
         return res.status(500).json(errorResponse(error.message))
     }
 };
+
+
+
+
 
 
 
@@ -334,6 +356,7 @@ exports.mark_break = async (req, res) => {
             return res.status(400).json(errorResponse("You have not marked your attendance yet. Please mark your attendance."));
         }
 
+
         if (get_attendance_id[0].on_break) {
             await transaction.rollback();
             return res.status(400).json(errorResponse("You are already on break."));
@@ -383,7 +406,7 @@ exports.mark_break = async (req, res) => {
 
 exports.unmark_break = async (req, res) => {
     const userId = req.result.user_id;
-    let current_time = moment().tz('Asia/Kolkata').format('YYYY-MM-DD HH:mm:ss');
+    let current_time = moment().tz('Asia/Kolkata').format('YYYY-MM-DD HH:mm:ss')
 
 
     const transaction = await sequelize.transaction();
@@ -471,6 +494,9 @@ exports.unmark_break = async (req, res) => {
         });
     }
 };
+
+
+
 
 exports.get_attendance_details = async (req, res) => {
     try {

@@ -119,6 +119,10 @@ module.exports = (sequelize) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
+    working_schedule:{
+      type:DataTypes.ENUM("full-time","split","part-time"),
+      allowNull:true
+  },
     password_reset_token: {
       type: DataTypes.STRING,
       allowNull: true,
