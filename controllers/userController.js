@@ -773,9 +773,12 @@ exports.delete_employee = async (req, res) => {
 }
 
 
+
+
+
 exports.update_user = async (req, res) => {
   const {
-    id, name, username, email, mobile, emergency_contact_relationship, emergency_contact_name,
+    id, name, username, email, mobile, emergency_contact_relationship, emergency_contact_name,working_schedule,
     emergency_contact, bank_name, account_number, ifsc, increment_date, gender, dob, doj, skype_email,
     ultivic_email, salary, security, total_security, installments, position, department, status,
     address, documents, role
@@ -788,7 +791,7 @@ exports.update_user = async (req, res) => {
   const transaction = await sequelize.transaction();
 
   try {
-    // Step 1: Check if user exists
+  
     const [existingUser] = await sequelize.query(`SELECT * FROM users WHERE id = ?`, {
       replacements: [id],
       type: sequelize.QueryTypes.SELECT,
@@ -799,14 +802,14 @@ exports.update_user = async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    // Step 2: Validate required fields
-    const requiredFields = ['name', 'username', 'email', 'mobile', 'gender', 'dob', 'doj', 'position', 'department', 'status', 'address'];
+  
+    const requiredFields = ['name', 'username', 'email', 'mobile', 'gender', 'dob', 'doj', 'position', 'department', 'status', 'address','working_schedule'];
     const missingFields = requiredFields.filter(field => req.body[field] === undefined);
     if (missingFields.length > 0) {
       return res.status(400).json({ error: `Missing required fields: ${missingFields.join(', ')}` });
     }
 
-    // Step 3: Prepare fields to update in `users` table
+
     const fields = [];
     const values = [];
     const addField = (value, column) => {
@@ -820,6 +823,7 @@ exports.update_user = async (req, res) => {
     addField(username, 'username');
     addField(email, 'email');
     addField(mobile, 'mobile');
+    addField(working_schedule,'working_schedule');
     addField(emergency_contact_relationship, 'emergency_contact_relationship');
     addField(emergency_contact_name, 'emergency_contact_name');
     addField(emergency_contact, 'emergency_contact');
@@ -842,7 +846,7 @@ exports.update_user = async (req, res) => {
     addField(address, 'address');
     addField(role, 'role');
 
-    // Update user details if there are fields to update
+   
     if (fields.length > 0) {
       const updateUserQuery = `UPDATE users SET ${fields.join(', ')} WHERE id = ?`;
       await sequelize.query(updateUserQuery, {
@@ -851,16 +855,16 @@ exports.update_user = async (req, res) => {
       });
     }
 
-    // Step 4: Update specific user role in `user_roles` if role changed
+   
     if (role && role !== existingUser.role) {
-      // Get the current role ID for the user
+     
       const [currentRoleData] = await sequelize.query(`SELECT role_id FROM user_roles WHERE user_id = ? AND role_id = (SELECT id FROM roles WHERE role = ?)`, {
         replacements: [id, existingUser.role],
         type: sequelize.QueryTypes.SELECT,
         transaction,
       });
 
-      // If role found and differs from the new role, update
+    
       if (currentRoleData && role !== existingUser.role) {
         const [newRoleData] = await sequelize.query(`SELECT id FROM roles WHERE role = ?`, {
           replacements: [role],
@@ -879,7 +883,7 @@ exports.update_user = async (req, res) => {
       }
     }
 
-    // Step 5: Handle document updates
+    
     if (Array.isArray(documents)) {
       const existingDocs = await sequelize.query(`SELECT document_name FROM documents WHERE user_id = ?`, {
         replacements: [id],
@@ -891,14 +895,14 @@ exports.update_user = async (req, res) => {
       const docsToAdd = documents.filter(doc => !existingDocNames.includes(doc));
       const docsToRemove = existingDocNames.filter(doc => !documents.includes(doc));
 
-      // Add new documents
+
       if (docsToAdd.length > 0) {
         const insertValues = docsToAdd.flatMap(doc => [id, doc]);
         const insertQuery = `INSERT INTO documents (user_id, document_name, createdAt, updatedAt) VALUES ${docsToAdd.map(() => "(?, ?, NOW(), NOW())").join(", ")}`;
         await sequelize.query(insertQuery, { replacements: insertValues, transaction });
       }
 
-      // Remove obsolete documents
+
       if (docsToRemove.length > 0) {
         const deleteQuery = `DELETE FROM documents WHERE user_id = ? AND document_name IN (${docsToRemove.map(() => "?").join(", ")})`;
         await sequelize.query(deleteQuery, { replacements: [id, ...docsToRemove], transaction });
