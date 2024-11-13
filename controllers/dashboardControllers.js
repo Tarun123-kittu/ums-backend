@@ -460,10 +460,8 @@ exports.get_all_employees_accepted_leaves = async (req, res) => {
         const responseData = usersWithLeaves.map(user => ({
             name: user.name,
             department: user.department,
-            leaves: [{
-                count: user.count,
-                duration: `${user.from_date} to ${user.to_date}`,
-            }],
+            count: user.count,
+            duration: `${user.from_date} to ${user.to_date}`,
         }));
 
         return res.status(200).json(successResponse('Data retrieved successfully', responseData));
