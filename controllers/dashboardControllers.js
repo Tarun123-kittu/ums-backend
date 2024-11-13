@@ -438,7 +438,7 @@ exports.get_all_employees_accepted_leaves = async (req, res) => {
 
        
         const usersWithLeavesQuery = `
-            SELECT u.id, u.name, u.department,l.count, l.from_date, l.to_date
+            SELECT u.id, u.name, u.position,l.count, l.from_date, l.to_date
             FROM users u
             LEFT JOIN leaves l ON u.id = l.user_id
             WHERE l.status = 'ACCEPTED'
@@ -459,7 +459,7 @@ exports.get_all_employees_accepted_leaves = async (req, res) => {
         
         const responseData = usersWithLeaves.map(user => ({
             name: user.name,
-            department: user.department,
+            department: user.position,
             count: user.count,
             duration: `${user.from_date} to ${user.to_date}`,
         }));
