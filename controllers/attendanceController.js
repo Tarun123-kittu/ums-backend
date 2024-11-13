@@ -21,6 +21,7 @@ exports.mark_attendance = async (req, res) => {
         });
         if (is_today_attendance_marked) return res.status(400).json({ type: "error", message: "You already marked your attendance !!" })
 
+        return res.send(current_time)
         const mark_attendance_query = `INSERT INTO attendances (date, user_id, in_time, status, login_device, login_mobile, created_by, createdAt, updatedAt) VALUES (?, ?, ?, "PRESENT", ?, ?, ?, ?, ?)`;
 
         const [is_attendance_marked] = await sequelize.query(mark_attendance_query, {

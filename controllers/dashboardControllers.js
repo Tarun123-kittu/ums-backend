@@ -436,9 +436,8 @@ exports.get_all_employees_accepted_leaves = async (req, res) => {
         const startOfWeek = moment().startOf('week').format('YYYY-MM-DD');
         const endOfWeek = moment().endOf('week').format('YYYY-MM-DD');
 
-       
         const usersWithLeavesQuery = `
-            SELECT u.id, u.name, u.position,l.count, l.from_date, l.to_date
+            SELECT u.id, u.name, u.position, l.count, l.from_date, l.to_date
             FROM users u
             LEFT JOIN leaves l ON u.id = l.user_id
             WHERE l.status = 'ACCEPTED'
@@ -449,19 +448,17 @@ exports.get_all_employees_accepted_leaves = async (req, res) => {
             )
         `;
 
-    
         const [usersWithLeaves] = await sequelize.query(usersWithLeavesQuery);
 
         if (usersWithLeaves.length < 1) {
             return res.status(400).json(errorResponse('No accepted leaves found for this week'));
         }
 
-        
         const responseData = usersWithLeaves.map(user => ({
             name: user.name,
             department: user.position,
             count: user.count,
-            duration: `${user.from_date} to ${user.to_date}`,
+            duration: user.from_date === user.to_date ? user.from_date : `${user.from_date} to ${user.to_date}`,
         }));
 
         return res.status(200).json(successResponse('Data retrieved successfully', responseData));
@@ -471,3 +468,4 @@ exports.get_all_employees_accepted_leaves = async (req, res) => {
         return res.status(500).json(errorResponse(error.message));
     }
 };
+
