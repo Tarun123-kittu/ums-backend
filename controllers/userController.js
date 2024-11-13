@@ -602,16 +602,13 @@ exports.change_password = async (req, res) => {
 
 
 
-
-
-
-exports.get_employee_details = async (req, res) => {
-  const { id } = req.params;
+exports.get_employee_details = async(req,res)=>{
+  const id = req.query.id;
   if (!id) return res.status(400).json({ type: "error", message: "Employee id is required to perform this action" });
   try {
     const get_employee_query = `
       SELECT 
-        id, name, username, email, mobile, emergency_contact_relationship, emergency_contact_name,
+        id, name, username, email, mobile,working_schedule, emergency_contact_relationship, emergency_contact_name,
         emergency_contact, bank_name, account_number, ifsc, increment_date, gender, dob, doj, skype_email,
         ultivic_email, salary, security, total_security, installments, position, department, status, 
         address, role, is_disabled 
@@ -643,10 +640,7 @@ exports.get_employee_details = async (req, res) => {
       message: error?.message
     });
   }
-};
-
-
-
+}
 
 
 

@@ -62,7 +62,7 @@ router.post("/login", loginValidator, validateLoginDAtaTypes, userController.log
 router.post("/forgot_password", forgetPasswordValidator, validateForgotPasswordDataTypes, userController.forgot_password)
 router.post("/reset_password/:token", validateResetPasswordDataTypes, userController.reset_password)
 router.post("/change_password", authenticateToken, validateChangePassword, validateChangePasswordDataTypes, userController.change_password)
-router.get("/get_employee_details/:id", authenticateToken, userController.get_employee_details)
+router.get("/get_employee_details", authenticateToken, userController.get_employee_details)
 router.get("/get_employees", authenticateToken, userController.get_employees)
 router.patch("/delete_employee/:id", authenticateToken, userController.delete_employee)
 router.put("/update_user", authenticateToken, updateUserValidator, userController.update_user)
@@ -220,6 +220,9 @@ router.get("/get_all_on_leave_employees", authenticateToken, dashboardController
 router.get("/get_all_interviews", authenticateToken, dashboardController.get_all_interviews)
 
 
+
+//employee dashboard
+router.get("/get_employee_leaves_record",authenticateToken,dashboardController.get_employee_leaves_record)
 
 
 module.exports = router

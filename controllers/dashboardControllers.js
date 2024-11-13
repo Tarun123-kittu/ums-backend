@@ -39,12 +39,12 @@ exports.get_dashboard_leaves = async (req, res) => {
             replacements: { queryMonth },
             type: sequelize.QueryTypes.SELECT,
         });
-        
-        
+
+
         if (leaves.length === 0) {
             queryMonth = parseInt(queryMonth)
             let month_name;
-            switch(queryMonth){
+            switch (queryMonth) {
                 case 1: month_name = 'January';
                     break;
                 case 2: month_name = 'February';
@@ -73,7 +73,7 @@ exports.get_dashboard_leaves = async (req, res) => {
             }
             return res.status(200).json(successResponse(`No pending leaves found for ${month_name}`));
         }
-        
+
 
 
         return res.status(200).json(successResponse("Data retrieved successfully", leaves));
@@ -367,3 +367,61 @@ exports.get_all_interviews = async (req, res) => {
 
 
 
+// ******************************** Employee Dashboard **************************
+
+
+exports.get_employee_leaves_record = async (req, res) => {
+    try {
+        let userId = req.result.user_id
+
+        let userExistQuery = `SELECT id FROM users WHERE id = ${userId}`
+        let isUserExist = await sequelize.query(userExistQuery)
+
+        if (isUserExist.length < 1) {
+            return res.status(400).json(errorResponse('User not found with this userId'))
+        }
+
+        const appliedLeavesQuery = `
+        SELECT COALESCE(SUM(count), 0) AS totalLeaves
+        FROM leaves
+        WHERE user_id = ${userId} AND from_date >= CURDATE()
+        `;
+        const [appliedLeaves] = await sequelize.query(appliedLeavesQuery);
+
+
+        const takenLeavesQuery = `
+        SELECT COALESCE(SUM(count), 0) AS totalTakenLeaves
+        FROM leaves
+        WHERE user_id = ${userId} 
+          AND status = 'ACCEPTED'
+          AND to_date <= CURDATE()
+        `;
+        const [takenLeaves] = await sequelize.query(takenLeavesQuery);
+    
+
+        const pendingLeavesQuery = `
+        SELECT 
+        COALESCE(paid_leave, 0) AS pending_leaves
+        FROM bank_leaves
+        WHERE employee_id = ${userId}
+        ORDER BY createdAt DESC
+        LIMIT 1
+`;
+
+        const [pendingLeaves] = await sequelize.query(pendingLeavesQuery);
+        
+
+        let leavesData = {
+            available_leaves_in_year :12,
+            pending_leaves:pendingLeaves[0].pending_leaves,
+            taken_leaves_till_today:takenLeaves[0].totalTakenLeaves,
+            applied_leaves_form_today:appliedLeaves[0].totalLeaves
+        }
+
+        return res.status(200).json(successResponse('Data retrieved successfully',leavesData))
+
+    } catch (error) {
+        console.log('ERROR::', error)
+        return res.status(500).json(errorResponse(error.message))
+    }
+}

@@ -12,6 +12,7 @@ exports.apply_leave = async (req, res) => {
     let current_time = moment().tz('Asia/Kolkata').format('YYYY-MM-DD HH:mm:ss');
     let { type, from_date, to_date, description } = req.body;
 
+
     let t = await sequelize.transaction();
 
     try {
@@ -19,6 +20,13 @@ exports.apply_leave = async (req, res) => {
         let parsedToDate = moment(to_date);
 
         let leaveDays = parsedToDate.diff(parsedFromDate, 'days') + 1;
+
+        const validLeaveTypes = ['SICK LEAVE', 'URGENT LEAVE', 'CASUAL LEAVE', 'HALF DAY', 'SHORT DAY'];
+
+        if (!validLeaveTypes.includes(type)) {
+            return res.status(400).json(errorResponse("Please provide leave type one of: SICK LEAVE, URGENT LEAVE, CASUAL LEAVE, HALF DAY, SHORT DAY"));
+        }
+        
 
         if (type === "HALF DAY" && leaveDays !== 1) {
             throw new Error("Half Day can't be on more than one day");
