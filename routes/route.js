@@ -223,6 +223,7 @@ router.get("/get_all_interviews", authenticateToken, dashboardController.get_all
 
 //employee dashboard
 router.get("/get_employee_leaves_record",authenticateToken,dashboardController.get_employee_leaves_record)
+router.get("/get_all_employees_accepted_leaves",authenticateToken,dashboardController.get_all_employees_accepted_leaves)
 
 
 module.exports = router

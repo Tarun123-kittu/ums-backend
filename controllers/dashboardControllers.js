@@ -397,7 +397,7 @@ exports.get_employee_leaves_record = async (req, res) => {
           AND to_date <= CURDATE()
         `;
         const [takenLeaves] = await sequelize.query(takenLeavesQuery);
-    
+
 
         const pendingLeavesQuery = `
         SELECT 
@@ -409,19 +409,67 @@ exports.get_employee_leaves_record = async (req, res) => {
 `;
 
         const [pendingLeaves] = await sequelize.query(pendingLeavesQuery);
-        
+
 
         let leavesData = {
-            available_leaves_in_year :12,
-            pending_leaves:pendingLeaves[0].pending_leaves,
-            taken_leaves_till_today:takenLeaves[0].totalTakenLeaves,
-            applied_leaves_form_today:appliedLeaves[0].totalLeaves
+            available_leaves_in_year: 12,
+            pending_leaves: pendingLeaves[0].pending_leaves,
+            taken_leaves_till_today: takenLeaves[0].totalTakenLeaves,
+            applied_leaves_form_today: appliedLeaves[0].totalLeaves
         }
 
-        return res.status(200).json(successResponse('Data retrieved successfully',leavesData))
+        return res.status(200).json(successResponse('Data retrieved successfully', leavesData))
 
     } catch (error) {
         console.log('ERROR::', error)
         return res.status(500).json(errorResponse(error.message))
     }
 }
+
+
+
+
+
+
+exports.get_all_employees_accepted_leaves = async (req, res) => {
+    try {
+        const startOfWeek = moment().startOf('week').format('YYYY-MM-DD');
+        const endOfWeek = moment().endOf('week').format('YYYY-MM-DD');
+
+       
+        const usersWithLeavesQuery = `
+            SELECT u.id, u.name, u.department,l.count, l.from_date, l.to_date
+            FROM users u
+            LEFT JOIN leaves l ON u.id = l.user_id
+            WHERE l.status = 'ACCEPTED'
+            AND (
+                (l.from_date >= '${startOfWeek}' AND l.from_date <= '${endOfWeek}') 
+                OR (l.to_date >= '${startOfWeek}' AND l.to_date <= '${endOfWeek}')
+                OR (l.from_date <= '${startOfWeek}' AND l.to_date >= '${endOfWeek}')
+            )
+        `;
+
+    
+        const [usersWithLeaves] = await sequelize.query(usersWithLeavesQuery);
+
+        if (usersWithLeaves.length < 1) {
+            return res.status(400).json(errorResponse('No accepted leaves found for this week'));
+        }
+
+        
+        const responseData = usersWithLeaves.map(user => ({
+            name: user.name,
+            department: user.department,
+            leaves: [{
+                count: user.count,
+                duration: `${user.from_date} to ${user.to_date}`,
+            }],
+        }));
+
+        return res.status(200).json(successResponse('Data retrieved successfully', responseData));
+
+    } catch (error) {
+        console.log("ERROR::", error);
+        return res.status(500).json(errorResponse(error.message));
+    }
+};
