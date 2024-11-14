@@ -224,6 +224,11 @@ router.get("/get_all_interviews", authenticateToken, dashboardController.get_all
 //employee dashboard
 router.get("/get_employee_leaves_record",authenticateToken,dashboardController.get_employee_leaves_record)
 router.get("/get_all_employees_accepted_leaves",authenticateToken,dashboardController.get_all_employees_accepted_leaves)
+router.post("/create_task",authenticateToken,dashboardController.create_task)
+router.get("/get_tasks",authenticateToken,dashboardController.get_tasks)
+router.put("/shift_task",authenticateToken,dashboardController.shift_task)
+router.get('/get_notifications',authenticateToken,dashboardController.get_notifications)
+router.put('/mark_notifications_as_read',authenticateToken,dashboardController.mark_notifications_as_read)
 
 
 module.exports = router

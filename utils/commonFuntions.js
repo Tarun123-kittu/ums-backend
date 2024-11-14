@@ -12,9 +12,9 @@ const moment = require('moment-timezone');
 
 
 
-const createToken = async (roles, user_id, username, email,working_schedule) => {
+const createToken = async (roles, user_id, username,name, email,working_schedule) => {
     return new Promise((resolve, reject) => {
-        jwt.sign({ roles, user_id, username, email,working_schedule }, process.env.JWT_SECRET, (err, token) => {
+        jwt.sign({ roles, user_id, username,name, email,working_schedule }, process.env.JWT_SECRET, (err, token) => {
             if (err) {
                 reject(err);
             } else {

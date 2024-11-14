@@ -6,6 +6,7 @@ const moment = require('moment-timezone');
 
 
 
+
 exports.get_dashboard_leaves = async (req, res) => {
     try {
         let { month } = req.query;
@@ -243,13 +244,11 @@ exports.get_user_today_attendance = async (req, res) => {
         });
 
         if (!attendance || attendance.length === 0) {
-            return res.status(400).json({ type: "error", message: "No attendance found for today" });
+            return res.status(400).json(errorResponse('No attendance found for today'));
         }
 
-        res.status(200).json({
-            type: "success",
-            data: attendance
-        });
+        res.status(200).json(successResponse('Data retreived successfully', attendance));
+
     } catch (error) {
         return res.status(500).json(errorResponse(error.message));
     }
@@ -469,3 +468,231 @@ exports.get_all_employees_accepted_leaves = async (req, res) => {
     }
 };
 
+
+
+
+
+exports.create_task = async (req, res) => {
+    let transaction;
+    try {
+
+        transaction = await sequelize.transaction();
+
+        let userId = req.result.user_id;
+        let task_name = req.body.task_name;
+        let task_status = 'ACTIVE';
+
+
+        if (!task_name) {
+            return res.status(400).json(errorResponse('Please provide task_name'));
+        }
+
+
+        let userExistQuery = `SELECT id FROM users WHERE id = ?`;
+        let [isUserExist] = await sequelize.query(userExistQuery, {
+            replacements: [userId],
+            type: sequelize.QueryTypes.SELECT,
+            transaction
+        });
+
+        if (!isUserExist) {
+            return res.status(400).json(errorResponse('User not found with this userId'));
+        }
+
+
+        const insertTaskQuery = `
+            INSERT INTO to_do_list (user_id, task_name, task_status, created_at, updated_at) 
+            VALUES (?, ?, ?, NOW(), NOW())
+        `;
+
+        await sequelize.query(insertTaskQuery, {
+            replacements: [userId, task_name, task_status],
+            type: sequelize.QueryTypes.INSERT,
+            transaction
+        });
+
+
+        await transaction.commit();
+
+        return res.status(200).json(successResponse('Task added successfully'));
+
+    } catch (error) {
+        if (transaction) await transaction.rollback();
+        console.log("ERROR::", error);
+        return res.status(500).json(errorResponse(error.message));
+    }
+};
+
+
+
+
+
+exports.get_tasks = async (req, res) => {
+    try {
+
+        let userId = req.result.user_id
+        let task_status = req.query.task_status
+
+        if (!task_status) {
+            return res.status(400).json(errorResponse('Provide task status for which you want to get list'))
+        }
+
+        if (task_status !== 'ACTIVE' && task_status !== 'COMPLETED') {
+            return res.status(400).json(errorResponse('Task status must be one of: ACTIVE or COMPLETED'));
+        }
+
+        let userExistQuery = `SELECT id FROM users WHERE id = ?`;
+        let [isUserExist] = await sequelize.query(userExistQuery, {
+            replacements: [userId],
+            type: sequelize.QueryTypes.SELECT,
+        });
+
+        if (!isUserExist) {
+            return res.status(400).json(errorResponse('User not found with this userId'));
+        }
+
+
+        let getUserTasksQuery = `Select id,task_name 
+        FROM to_do_list 
+        WHERE user_id = ? 
+        AND task_status = ?
+        AND MONTH(created_at) = MONTH(CURDATE()) 
+        AND YEAR(created_at) = YEAR(CURDATE())
+        `
+
+        let [userTasks] = await sequelize.query(getUserTasksQuery, {
+            replacements: [userId, task_status],
+        })
+
+        if (userTasks.length < 1) {
+            return res.status(200).json(successResponse(`Currently you have no task in ${task_status}`))
+        }
+
+        return res.status(200).json(successResponse('Data retreived successfully', userTasks))
+
+    } catch (error) {
+        console.log('ERROR::', error)
+        return res.status(500).json(errorResponse(error.message))
+    }
+}
+
+
+
+
+exports.shift_task = async (req, res) => {
+    const transaction = await sequelize.transaction();
+    try {
+        const userId = req.result.user_id;
+        const tasks_ids = req.body.tasks_ids;
+        const status = req.body.task_status;
+
+
+        if (!status) {
+            return res.status(400).json(errorResponse('Please provide task status to where you want to move tasks'));
+        }
+        if (status !== 'ACTIVE' && status !== 'COMPLETED') {
+            return res.status(400).json(errorResponse('Task status must be one of: ACTIVE or COMPLETED'));
+        }
+        if (!tasks_ids || !Array.isArray(tasks_ids) || tasks_ids.length === 0) {
+            return res.status(400).json(errorResponse('Please provide a valid array of task IDs'));
+        }
+
+
+        const userExistQuery = `SELECT id FROM users WHERE id = ?`;
+        const [isUserExist] = await sequelize.query(userExistQuery, {
+            replacements: [userId],
+            type: sequelize.QueryTypes.SELECT,
+        });
+
+        if (!isUserExist) {
+            return res.status(400).json(errorResponse('User not found with this userId'));
+        }
+
+
+        const tasksQuery = `SELECT id FROM to_do_list WHERE id IN (?) AND user_id = ?`;
+        const [tasks] = await sequelize.query(tasksQuery, {
+            replacements: [tasks_ids, userId],
+            type: sequelize.QueryTypes.SELECT,
+        });
+
+
+
+        const updateTasksQuery = `UPDATE to_do_list SET task_status = ?, updated_at = NOW() WHERE id IN (?)`;
+        await sequelize.query(updateTasksQuery, {
+            replacements: [status, tasks_ids],
+            type: sequelize.QueryTypes.UPDATE,
+            transaction,
+        });
+
+        await transaction.commit();
+        return res.status(200).json(successResponse('Tasks shifted successfully'));
+
+    } catch (error) {
+        if (transaction) await transaction.rollback();
+        console.log('ERROR::', error)
+        return res.status(500).json(errorResponse(error.message))
+    }
+}
+
+
+
+
+exports.get_notifications = async (req, res) => {
+    try {
+        let userId = req.result.user_id;
+
+        const userExistQuery = `SELECT id FROM users WHERE id = ?`;
+        const [isUserExist] = await sequelize.query(userExistQuery, {
+            replacements: [userId],
+            type: sequelize.QueryTypes.SELECT,
+        });
+
+        if (!isUserExist) {
+            return res.status(400).json(errorResponse("User doesn't exist with this userId"))
+        }
+
+        let getNotificationQuery = `SELECT id,type,text,status,created_at  FROM notifications WHERE user_id = ?`
+        let [getNotifications] = await sequelize.query(getNotificationQuery, {
+            replacements: [userId],
+        })
+
+        if (getNotifications.length < 1) {
+            return res.status(400).json(errorResponse('No notifications found'))
+        }
+        return res.status(200).json(successResponse('Data retrieved successfully', getNotifications))
+
+    } catch (error) {
+        console.log('ERROR:', error)
+        return res.status(500).json(errorResponse(error.message))
+    }
+}
+
+
+
+
+exports.mark_notifications_as_read = async(req,res)=>{
+    try{
+        let userId = req.result.user_id
+        
+        const userExistQuery = `SELECT id FROM users WHERE id = ?`;
+        const [isUserExist] = await sequelize.query(userExistQuery, {
+            replacements: [userId],
+            type: sequelize.QueryTypes.SELECT,
+        });
+
+        if (!isUserExist) {
+            return res.status(400).json(errorResponse("User doesn't exist with this userId"))
+        }
+
+        const readNotificationsQuery = `UPDATE notifications SET status = ? WHERE user_id = ?`
+         await sequelize.query(readNotificationsQuery,{
+            replacements:['read',userId]
+        })
+
+        return res.status(200).json(successResponse("Notifications mark as read"))
+
+    }catch(error){
+        console.log('ERROR::',error)
+        return res.status(500).json(errorResponse(error.message))
+    }
+}

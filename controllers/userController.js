@@ -278,6 +278,7 @@ exports.login = async (req, res) => {
   SELECT 
       u.id AS user_id, 
       u.username, 
+      u.name,
       u.password, 
       u.working_schedule,
       r.role AS role_name, 
@@ -307,8 +308,9 @@ exports.login = async (req, res) => {
     });
 
     if (!userRolesData || userRolesData.length === 0) { return res.status(400).json({ message: "User with this email does not exist.", type: 'error' }); }
-
-    const { user_id, username, password: hashedPassword,working_schedule } = userRolesData[0];
+    
+    const { user_id, username,name, password: hashedPassword,working_schedule } = userRolesData[0];
+    
 
     const isPasswordTrue = await password_compare(hashedPassword, password);
 
@@ -332,7 +334,7 @@ exports.login = async (req, res) => {
     }, []);
 
    
-    const token = await createToken(roles, user_id, username, email,working_schedule);
+    const token = await createToken(roles, user_id, username,name, email,working_schedule);
 
     return res.status(200).json({
       type: "success",
@@ -340,7 +342,6 @@ exports.login = async (req, res) => {
       token,
       roles,
       id: user_id,
-      working_schedule  
     });
 
   } catch (error) {

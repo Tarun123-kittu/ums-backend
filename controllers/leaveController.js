@@ -149,12 +149,12 @@ exports.apply_leave = async (req, res) => {
 
 exports.all_applied_leaves = async (req, res) => {
     try {
-        // Get page and limit from request query, use default values if not provided
+       
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         const offset = (page - 1) * limit;
 
-        // Count total records for pagination
+        
         const count_query = `
             SELECT COUNT(*) AS total
             FROM leaves l
@@ -169,7 +169,7 @@ exports.all_applied_leaves = async (req, res) => {
         const totalRecords = totalResult[0].total;
         const totalPages = Math.ceil(totalRecords / limit);
 
-        // Fetch paginated records
+     
         const select_all_applied_leaves_query = `
             SELECT 
                 l.id,
