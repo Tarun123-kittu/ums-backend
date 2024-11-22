@@ -229,6 +229,7 @@ router.get("/get_tasks",authenticateToken,dashboardController.get_tasks)
 router.put("/shift_task",authenticateToken,dashboardController.shift_task)
 router.get('/get_notifications',authenticateToken,dashboardController.get_notifications)
 router.put('/mark_notifications_as_read',authenticateToken,dashboardController.mark_notifications_as_read)
+router.get('/get_employee_montly_leave_report',authenticateToken,dashboardController.get_employee_montly_leave_report)
 
 
 module.exports = router

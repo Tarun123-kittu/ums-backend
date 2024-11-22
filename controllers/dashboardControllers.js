@@ -670,10 +670,10 @@ exports.get_notifications = async (req, res) => {
 
 
 
-exports.mark_notifications_as_read = async(req,res)=>{
-    try{
+exports.mark_notifications_as_read = async (req, res) => {
+    try {
         let userId = req.result.user_id
-        
+
         const userExistQuery = `SELECT id FROM users WHERE id = ?`;
         const [isUserExist] = await sequelize.query(userExistQuery, {
             replacements: [userId],
@@ -685,14 +685,72 @@ exports.mark_notifications_as_read = async(req,res)=>{
         }
 
         const readNotificationsQuery = `UPDATE notifications SET status = ? WHERE user_id = ?`
-         await sequelize.query(readNotificationsQuery,{
-            replacements:['read',userId]
+        await sequelize.query(readNotificationsQuery, {
+            replacements: ['read', userId]
         })
 
         return res.status(200).json(successResponse("Notifications mark as read"))
 
-    }catch(error){
-        console.log('ERROR::',error)
+    } catch (error) {
+        console.log('ERROR::', error)
+        return res.status(500).json(errorResponse(error.message))
+    }
+}
+
+
+
+
+
+exports.get_employee_montly_leave_report = async (req, res) => {
+    try {
+        let userId = req.result.user_id
+
+        const userExistQuery = `SELECT id FROM users WHERE id = ?`;
+        const [isUserExist] = await sequelize.query(userExistQuery, {
+            replacements: [userId],
+            type: sequelize.QueryTypes.SELECT,
+        });
+
+        if (!isUserExist) {
+            return res.status(400).json(errorResponse("User doesn't exist with this userId"))
+        }
+
+        const getLeavesTypesCountQuery =
+            `SELECT 
+            type, 
+            SUM(count) AS total_count
+               FROM 
+                   Leaves
+               WHERE 
+                   user_id = ? 
+                   AND MONTH(from_date) = MONTH(CURRENT_DATE()) 
+                   AND YEAR(from_date) = YEAR(CURRENT_DATE())  
+                   AND from_date <= CURRENT_DATE()             
+                   AND status = 'ACCEPTED'                    
+               GROUP BY 
+                   type;
+        `
+
+        let [leavesTypes] = await sequelize.query(getLeavesTypesCountQuery, {
+            replacements: [userId]
+        })
+
+        const count_late_entries_query = `
+        SELECT COUNT(*) AS late_count
+        FROM late_attendance
+        WHERE user_id = ? AND MONTH(date) = MONTH(CURDATE()) AND YEAR(date) = YEAR(CURDATE())
+    `;
+        const [late_entries] = await sequelize.query(count_late_entries_query, {
+            replacements: [userId],
+            type: sequelize.QueryTypes.SELECT
+        });
+
+
+        leavesTypes = [...leavesTypes, late_entries]
+        return res.status(200).json(successResponse('Data retreived successfully',leavesTypes))
+
+    } catch (error) {
+        console.log('ERROR::', error)
         return res.status(500).json(errorResponse(error.message))
     }
 }

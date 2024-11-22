@@ -8,45 +8,8 @@ const moment = require('moment-timezone');
 
 
 
-
-// exports.mark_attendance = async (req, res) => {
-//     const user_id = req.result.user_id
-//     const { login_device, login_mobile } = req.body;
-//     let current_time = moment().tz('Asia/Kolkata').format('YYYY-MM-DD HH:mm:ss');
-
-//     try {
-//         const is_today_attendance_marked_query = `SELECT date FROM attendances WHERE date = CURDATE() AND user_id = ?`;
-//         const [is_today_attendance_marked] = await sequelize.query(is_today_attendance_marked_query, {
-//             replacements: [user_id],
-//             type: sequelize.QueryTypes.SELECT
-//         });
-//         if (is_today_attendance_marked) return res.status(400).json({ type: "error", message: "You already marked your attendance !!" })
-
-
-//         const mark_attendance_query = `INSERT INTO attendances (date, user_id, in_time, status, login_device, login_mobile, created_by, createdAt, updatedAt) VALUES (?, ?, ?, "PRESENT", ?, ?, ?, ?, ?)`;
-
-//         const [is_attendance_marked] = await sequelize.query(mark_attendance_query, {
-//             replacements: [current_time, user_id, current_time, login_device, login_mobile, user_id, current_time, current_time],
-//             type: sequelize.QueryTypes.INSERT
-//         });
-
-//         if (!is_attendance_marked) {
-//             return res.status(400).json({ type: "error", message: "Attendance marking failed" });
-//         }
-
-//         res.status(200).json({
-//             type: "success",
-//             message: "Attendance marked successfully"
-//         });
-//     } catch (error) {
-//         console.log("ERROR::", error)
-//         res.status(400).json(errorResponse(error.message));
-//     }
-// };
-
-
-
 exports.mark_attendance = async (req, res) => {
+    const io = req.app.get('io');
     const user_id = req.result.user_id;
     const { login_device, login_mobile } = req.body;
     const current_time = moment().tz('Asia/Kolkata').format('YYYY-MM-DD HH:mm:ss');
@@ -98,12 +61,13 @@ exports.mark_attendance = async (req, res) => {
             await sequelize.query(add_late_notification_query,{
                 replacements:[user_id,text,'Late Coming']
             })
+            io.emit('late_attendance',user_id)
 
-            if (late_entries.late_count > 3) {
-                const io = req.app.get('io');
+            if (late_entries.late_count > 2) {
+              
                 io.emit('late_threshold_exceeded', {
                     userId: user_id,
-                    message: 'You have already arrived late three times this month. If you arrive late a fourth time, HR will deduct half a day from your leave. Be punctual tomorrow.'
+                    message: `You have already arrived late ${late_entries.late_count} times this month. If you arrive late a ${late_entries.late_count +1} time, HR will deduct half a day from your leave. Be punctual tomorrow.`
                 });
             }
         }
