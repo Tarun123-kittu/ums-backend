@@ -752,24 +752,27 @@ exports.get_employee_montly_leave_report = async (req, res) => {
            const validLeaveTypes = ['SICK LEAVE', 'URGENT LEAVE', 'CASUAL', 'HALF DAY', 'SHORT DAY'];
 
         
-           const leaveCounts = validLeaveTypes.reduce((acc, type) => {
-               acc[type] = 0;
-               return acc;
-           }, {});
-   
-          
-           leavesTypes.forEach(leave => {
-               if (leaveCounts.hasOwnProperty(leave.type)) {
-                   leaveCounts[leave.type] = leave.total_count || 0;
-               }
-           });
-   
-         
-           leaveCounts["late_count"] = late_entries.late_count || 0;
-           leaveCounts["absent"] = 0; 
-   
-           return res.status(200).json(successResponse('Data retrieved successfully', leaveCounts));
-   
+      
+        const leaveCounts = validLeaveTypes.reduce((acc, type) => {
+            const formattedType = type.replace(/ /g, '_');
+            acc[formattedType] = 0;
+            return acc;
+        }, {});
+
+
+        leavesTypes.forEach(leave => {
+            const formattedType = leave.type.replace(/ /g, '_');
+            if (leaveCounts.hasOwnProperty(formattedType)) {
+                leaveCounts[formattedType] = leave.total_count || 0;
+            }
+        });
+
+       
+        leaveCounts["late_count"] = late_entries.late_count || 0;
+        leaveCounts["absent"] = 0;
+
+        return res.status(200).json(successResponse('Data retrieved successfully', leaveCounts));
+
 
 
     } catch (error) {
