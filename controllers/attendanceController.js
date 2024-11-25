@@ -14,7 +14,7 @@ exports.mark_attendance = async (req, res) => {
     const { login_device, login_mobile } = req.body;
     const current_time = moment().tz('Asia/Kolkata').format('YYYY-MM-DD HH:mm:ss');
     const current_time_only = moment().tz('Asia/Kolkata').format('HH:mm:ss');
-    const late_threshold_time = '15:55:22';
+    const late_threshold_time = '10:07:00';
     const text = 'Attention: Late entry recorded. Please review your schedule to avoid further delays'
 
     try {
