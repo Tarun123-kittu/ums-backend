@@ -734,7 +734,7 @@ exports.get_employee_montly_leave_report = async (req, res) => {
         let [leavesTypes] = await sequelize.query(getLeavesTypesCountQuery, {
             replacements: [userId]
         })
-        
+
 
         const count_late_entries_query = `
         SELECT COUNT(*) AS late_count
@@ -745,16 +745,36 @@ exports.get_employee_montly_leave_report = async (req, res) => {
             replacements: [userId],
             type: sequelize.QueryTypes.SELECT
         });
-        let absents = 0
-        let absent= {
-            absent:absents
-        }
 
-        leavesTypes = [...leavesTypes, late_entries,absent]
-        return res.status(200).json(successResponse('Data retreived successfully',leavesTypes))
+
+
+        
+           const validLeaveTypes = ['SICK LEAVE', 'URGENT LEAVE', 'CASUAL', 'HALF DAY', 'SHORT DAY'];
+
+        
+           const leaveCounts = validLeaveTypes.reduce((acc, type) => {
+               acc[type] = 0;
+               return acc;
+           }, {});
+   
+          
+           leavesTypes.forEach(leave => {
+               if (leaveCounts.hasOwnProperty(leave.type)) {
+                   leaveCounts[leave.type] = leave.total_count || 0;
+               }
+           });
+   
+         
+           leaveCounts["late_count"] = late_entries.late_count || 0;
+           leaveCounts["absent"] = 0; 
+   
+           return res.status(200).json(successResponse('Data retrieved successfully', leaveCounts));
+   
+
 
     } catch (error) {
         console.log('ERROR::', error)
         return res.status(500).json(errorResponse(error.message))
     }
 }
+
