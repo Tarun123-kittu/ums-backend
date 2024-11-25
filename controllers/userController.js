@@ -332,7 +332,6 @@ exports.login = async (req, res) => {
 
       return acc;
     }, []);
-
    
     const token = await createToken(roles, user_id, username,name, email,working_schedule);
 
