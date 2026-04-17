@@ -7,7 +7,7 @@ module.exports = {
     up: async (queryInterface, Sequelize) => {
         try {
             // Check if the user with the given email already exists
-            const existingUser = await User.findOne({ where: { email: 'admin@gmail.com' } });
+            const existingUser = await User.findOne({ where: { email: 'test.ultivic@gmail.com' } });
 
             if (existingUser) {
                 console.log('This email is already used.');
@@ -15,7 +15,7 @@ module.exports = {
             }
 
             // Hash the password
-            const hashedPassword = await bcrypt.hash('admin1234', 10);
+            const hashedPassword = await bcrypt.hash('Test@123', 10);
 
             // Create the new user
             await User.create({
