@@ -26,4 +26,4 @@ jobs:
           git reset --hard origin/development
           git pull origin development --force
           npm install
-          pm2 restart ums-backend-dev || pm2 start server.js --name ums-backend-dev
+          pm2 restart ums-backend-dev || pm2 start index.js --name ums-backend-dev
