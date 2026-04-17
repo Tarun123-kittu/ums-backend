@@ -4,6 +4,25 @@ let { send_email } = require("../utils/commonFuntions")
 const { CronJob } = require('cron');
 const { errorResponse, successResponse } = require('../utils/responseHandler');
 
+const parsePositiveInteger = (value, defaultValue) => {
+    const parsedValue = Number.parseInt(value, 10);
+
+    if (Number.isFinite(parsedValue) && parsedValue > 0) {
+        return parsedValue;
+    }
+
+    return defaultValue;
+};
+
+const parseOptionalInteger = (value) => {
+    if (value === undefined || value === null || value === '') {
+        return null;
+    }
+
+    const parsedValue = Number.parseInt(value, 10);
+    return Number.isFinite(parsedValue) ? parsedValue : null;
+};
+
 
 
 exports.apply_leave = async (req, res) => {
@@ -601,7 +620,11 @@ exports.calculate_pending_leaves_for_all_users = async (req, res) => {
 exports.leave_bank_report = async (req, res) => {
     try {
         const { session, month, year, page = 1, limit = 10 } = req.query;
-        const offset = (page - 1) * limit;
+        const parsedPage = parsePositiveInteger(page, 1);
+        const parsedLimit = parsePositiveInteger(limit, 10);
+        const parsedMonth = parseOptionalInteger(month);
+        const parsedYear = parseOptionalInteger(year);
+        const offset = (parsedPage - 1) * parsedLimit;
 
 
         let bank_report_query = `
@@ -627,10 +650,10 @@ exports.leave_bank_report = async (req, res) => {
         `;
 
         const replacements = {
-            month: month ? parseInt(month) : null,
-            year: year ? parseInt(year) : null,
+            month: parsedMonth,
+            year: parsedYear,
             session: session || null,
-            limit: parseInt(limit),
+            limit: parsedLimit,
             offset: offset,
         };
 
@@ -660,7 +683,7 @@ exports.leave_bank_report = async (req, res) => {
             const defaultUsers = await sequelize.query(defaultUsersQuery, {
                 type: sequelize.QueryTypes.SELECT,
                 replacements: {
-                    limit: parseInt(limit),
+                    limit: parsedLimit,
                     offset: offset
                 }
             });
@@ -686,20 +709,20 @@ exports.leave_bank_report = async (req, res) => {
         const totalRecordsResult = await sequelize.query(count_query, {
             type: sequelize.QueryTypes.SELECT,
             replacements: {
-                month: month ? parseInt(month) : null,
-                year: year ? parseInt(year) : null,
+                month: parsedMonth,
+                year: parsedYear,
                 session: session || null,
             },
         });
 
         const totalCount = totalRecordsResult[0].totalCount;
-        const totalPages = Math.ceil(totalCount / limit);
+        const totalPages = Math.ceil(totalCount / parsedLimit);
 
         return res.status(200).json({
             type: "success",
             data: all_bank_records,
             pagination: {
-                currentPage: parseInt(page),
+                currentPage: parsedPage,
                 totalPages: totalPages,
                 totalRecords: totalCount,
             }
