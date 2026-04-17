@@ -1,0 +1,29 @@
+name: Deploy Mobile API
+on:
+  push:
+    branches:
+      - development      
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: Development    
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+    - name: Deploy via SSH
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.EC2_DEV_HOST }}
+        username: ${{ secrets.EC2_DEV_USER }}
+        key: ${{ secrets.EC2_DEV_SSH_KEY }}
+        script: |
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+          sudo chown -R $USER:$USER ${{ secrets.EC2_DEV_DIR }}
+          git config --global --add safe.directory ${{ secrets.EC2_DEV_DIR }}
+          cd ${{ secrets.EC2_DEV_DIR }}
+          git fetch --all
+          git reset --hard origin/development
+          git pull origin development --force
+          npm install
+          pm2 restart ums-backend-dev || pm2 start server.js --name ums-backend-dev
