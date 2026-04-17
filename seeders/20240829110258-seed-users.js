@@ -21,7 +21,7 @@ module.exports = {
             await User.create({
                 username: 'admin',
                 name: 'Admin User',
-                email: 'admin@gmail.com',
+                email: 'test.ultivic@gmail.com',
                 mobile: '1234567890',
                 emergency_contact_name: 'admin_contact',
                 emergency_contact_relationship: 'Friend',
