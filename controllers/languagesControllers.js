@@ -8,7 +8,7 @@ exports.create_language = async (req, res) => {
 
         const language = req.body.language;
 
-        const createLanguageQuery = `INSERT INTO Languages ( language,  createdAt,  updatedAt ) VALUES ( ?,  NOW(),   NOW() ) `;
+        const createLanguageQuery = `INSERT INTO languages ( language,  createdAt,  updatedAt ) VALUES ( ?,  NOW(),   NOW() ) `;
 
         const values = [language];
 
@@ -33,7 +33,7 @@ exports.create_language = async (req, res) => {
 
 exports.get_all_languages = async (req, res) => {
     try {
-        let getAllLanguagesQuery = ` SELECT id, language FROM Languages ORDER BY createdAt DESC`
+        let getAllLanguagesQuery = ` SELECT id, language FROM languages ORDER BY createdAt DESC`
 
         let [result] = await sequelize.query(getAllLanguagesQuery)
 
@@ -53,7 +53,7 @@ exports.get_language = async (req, res) => {
     try {
         let id = req.query.languageId
 
-        let findLanguageQuery = `SELECT id,language FROM Languages WHERE id = ?`
+        let findLanguageQuery = `SELECT id,language FROM languages WHERE id = ?`
 
         let [result] = await sequelize.query(findLanguageQuery, {
             replacements: [id]
@@ -77,7 +77,7 @@ exports.update_language = async (req, res) => {
         const language = req.body.language;
 
         const currentLanguageQuery = `
-            SELECT language FROM Languages 
+            SELECT language FROM languages 
             WHERE id = ? 
         `;
         const [currentLanguage] = await sequelize.query(currentLanguageQuery, {
@@ -92,7 +92,7 @@ exports.update_language = async (req, res) => {
         const updatedLanguage = language || currentLanguage[0].language;
 
         const updateLanguageQuery = `
-            UPDATE Languages 
+            UPDATE languages 
             SET language = ?, updatedAt = NOW() 
             WHERE id = ? 
         `;
@@ -129,7 +129,7 @@ exports.delete_language = async (req, res) => {
         const id = req.query.languageId;
 
         const deleteLanguageQuery = `
-                DELETE FROM Languages 
+                DELETE FROM languages 
                 WHERE id = ?
             `;
 

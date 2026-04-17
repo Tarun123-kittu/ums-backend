@@ -22,7 +22,7 @@ exports.create_lead = async (req, res) => {
         const t = await sequelize.transaction();
 
 
-        const checkEmailQuery = ` SELECT id FROM Interview_Leads WHERE email = ? `;
+        const checkEmailQuery = ` SELECT id FROM interview_leads WHERE email = ? `;
         const [existingLead] = await sequelize.query(checkEmailQuery, {
             replacements: [email],
             transaction: t,
@@ -34,7 +34,7 @@ exports.create_lead = async (req, res) => {
             return res.status(400).json(errorResponse("A lead with this email already exists."));
         }
 
-        const checkNumberQuery = `SELECT id FROM Interview_Leads WHERE phone_number = ?`
+        const checkNumberQuery = `SELECT id FROM interview_leads WHERE phone_number = ?`
         const [existingNumber] = await sequelize.query(checkNumberQuery, {
             replacements: [phone_number],
             transaction: t,
@@ -46,7 +46,7 @@ exports.create_lead = async (req, res) => {
         }
 
         const createLeadQuery = `
-            INSERT INTO Interview_Leads (
+            INSERT INTO interview_leads (
               name, phone_number, email, gender, dob, experience, 
               current_salary, expected_salary, profile, last_company, 
               state, house_address, createdAt, updatedAt
@@ -90,7 +90,7 @@ exports.get_lead = async (req, res) => {
     try {
         const id = req.query.leadId;
 
-        const getLeadQuery = `SELECT * FROM Interview_Leads WHERE id = ?`;
+        const getLeadQuery = `SELECT * FROM interview_leads WHERE id = ?`;
         const [lead] = await sequelize.query(getLeadQuery, {
             replacements: [id],
         });
@@ -132,7 +132,7 @@ exports.update_lead = async (req, res) => {
         const t = await sequelize.transaction();
 
 
-        const getLeadQuery = `SELECT * FROM Interview_Leads WHERE id = ?`;
+        const getLeadQuery = `SELECT * FROM interview_leads WHERE id = ?`;
         const [existingLead] = await sequelize.query(getLeadQuery, {
             replacements: [id],
             transaction: t,
@@ -146,7 +146,7 @@ exports.update_lead = async (req, res) => {
         const lead = existingLead[0];
 
         if (email && email !== lead.email) {
-            const checkEmailQuery = `SELECT id FROM Interview_Leads WHERE email = ? AND id != ?`;
+            const checkEmailQuery = `SELECT id FROM interview_leads WHERE email = ? AND id != ?`;
             const [existingEmail] = await sequelize.query(checkEmailQuery, {
                 replacements: [email, id],
                 transaction: t,
@@ -160,7 +160,7 @@ exports.update_lead = async (req, res) => {
 
 
         if (phone_number && phone_number !== lead.phone_number) {
-            const checkNumberQuery = `SELECT id FROM Interview_Leads WHERE phone_number = ? AND id != ?`;
+            const checkNumberQuery = `SELECT id FROM interview_leads WHERE phone_number = ? AND id != ?`;
             const [existingNumber] = await sequelize.query(checkNumberQuery, {
                 replacements: [phone_number, id],
                 transaction: t,
@@ -174,7 +174,7 @@ exports.update_lead = async (req, res) => {
 
 
         const updateLeadQuery = `
-        UPDATE Interview_Leads SET
+        UPDATE interview_leads SET
           name = ?,
           phone_number = ?,
           email = ?,
@@ -237,7 +237,7 @@ exports.get_all_leads = async (req, res) => {
                 i.experience, i.current_salary, i.expected_salary, 
                 l.language AS profile, i.last_company, i.state, i.house_address, i.in_round
             FROM 
-                Interview_Leads i
+                interview_leads i
                 JOIN languages l ON l.id = i.profile
             WHERE 
                 i.in_round = 0
@@ -256,7 +256,7 @@ exports.get_all_leads = async (req, res) => {
 
         let countQuery = `
             SELECT COUNT(*) AS total
-            FROM Interview_Leads i
+            FROM interview_leads i
             WHERE i.in_round = 0
         `;
 
@@ -327,7 +327,7 @@ exports.delete_lead = async (req, res) => {
     try {
         let id = req.query.leadId;
 
-        let isLeadExistQuery = `SELECT id, name FROM Interview_Leads WHERE id = ?`;
+        let isLeadExistQuery = `SELECT id, name FROM interview_leads WHERE id = ?`;
 
         let [isLeadExist] = await sequelize.query(isLeadExistQuery, {
             replacements: [id]
@@ -337,7 +337,7 @@ exports.delete_lead = async (req, res) => {
             return res.status(404).json({ success: false, message: "No record found." });
         }
 
-        let deleteLeadQuery = `DELETE FROM Interview_Leads WHERE id = ?`;
+        let deleteLeadQuery = `DELETE FROM interview_leads WHERE id = ?`;
 
         await sequelize.query(deleteLeadQuery, {
             replacements: [id]

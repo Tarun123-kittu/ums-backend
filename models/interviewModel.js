@@ -72,7 +72,7 @@ module.exports = (sequelize) => {
         {
             sequelize,
             modelName: 'Interview',
-            tableName: 'Interviews',
+            tableName: 'interviews',
             timestamps: true,
         }
     );

@@ -15,7 +15,7 @@ module.exports = (sequelize) => {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 references: {
-                    model: 'Interviews',
+                    model: 'interviews',
                     key: 'id',
                 },
                 onDelete: 'CASCADE',
@@ -24,7 +24,7 @@ module.exports = (sequelize) => {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 references: {
-                    model: 'Interview_Leads',
+                    model: 'interview_leads',
                     key: 'id',
                 },
                 onDelete: 'CASCADE',
@@ -33,7 +33,7 @@ module.exports = (sequelize) => {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 references: {
-                    model: 'HR_Round_Questions',
+                    model: 'hr_round_questions',
                     key: 'id',
                 },
                 onDelete: 'CASCADE',
@@ -67,7 +67,7 @@ module.exports = (sequelize) => {
         {
             sequelize,
             modelName: 'HRRound',
-            tableName: 'HR_Rounds',
+            tableName: 'hr_rounds',
             timestamps: true,
         }
     );

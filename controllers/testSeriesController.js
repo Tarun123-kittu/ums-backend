@@ -11,7 +11,7 @@ exports.create_series = async (req, res) => {
         let userId = req.result.user_id
         const { language_id, series_name, time_taken, description, experience_level } = req.body;
 
-        let checkLanguageExistQuery = `SELECT id FROM Languages where id = ?`
+        let checkLanguageExistQuery = `SELECT id FROM languages where id = ?`
 
         let [language] = await sequelize.query(checkLanguageExistQuery, {
             replacements: [language_id]
@@ -69,7 +69,7 @@ exports.get_all_series = async (req, res) => {
 
 
         if (id) {
-            let checkLanguageExistQuery = `SELECT id FROM Languages WHERE id = ?`;
+            let checkLanguageExistQuery = `SELECT id FROM languages WHERE id = ?`;
 
             let [language] = await sequelize.query(checkLanguageExistQuery, {
                 replacements: [id]

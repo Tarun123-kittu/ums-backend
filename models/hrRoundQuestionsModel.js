@@ -24,7 +24,7 @@ module.exports = (sequelize) => {
   }, {
     sequelize,
     modelName: 'HR_Round_Questions',
-    tableName: 'HR_Round_Questions',
+    tableName: 'hr_round_questions',
     timestamps: true,
   });
 

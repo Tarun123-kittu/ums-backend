@@ -15,7 +15,7 @@ module.exports = (sequelize) => {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-          model: 'Languages',
+          model: 'languages',
           key: 'id',
         },
         onUpdate: 'CASCADE',
