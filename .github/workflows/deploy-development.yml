@@ -1,4 +1,4 @@
-name: Deploy Mobile API
+name: Deploy Development Project
 on:
   push:
     branches:
