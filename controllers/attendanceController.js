@@ -6,9 +6,6 @@ const moment = require('moment-timezone');
 
 
 
-
-
-
 exports.mark_attendance = async (req, res) => {
     const io = req.app.get('io');
     const user_id = req.result.user_id;
@@ -16,24 +13,55 @@ exports.mark_attendance = async (req, res) => {
     const current_time = moment().tz('Asia/Kolkata').format('YYYY-MM-DD HH:mm:ss');
     const current_time_only = moment().tz('Asia/Kolkata').format('HH:mm:ss');
     const late_threshold_time = '10:07:00';
-    const text = 'Attention: Late entry recorded. Please review your schedule to avoid further delays'
 
     try {
-
-        const is_today_attendance_marked_query = `SELECT date FROM attendances WHERE date = CURDATE() AND user_id = ?`;
-        const [is_today_attendance_marked] = await sequelize.query(is_today_attendance_marked_query, {
+        // Fetch user's working schedule
+        const user_query = `SELECT working_schedule FROM users WHERE id = ?`;
+        const [user] = await sequelize.query(user_query, {
             replacements: [user_id],
             type: sequelize.QueryTypes.SELECT
         });
 
-        if (is_today_attendance_marked) {
-            return res.status(400).json({ type: "error", message: "You already marked your attendance!" });
+        if (!user) {
+            return res.status(404).json({ type: "error", message: "User not found" });
         }
 
+        // Determine session
+        let session = "Session 1";
 
-        if (current_time_only > late_threshold_time) {
+        // Check if the user already has two sessions
+        const session_count_query = `
+            SELECT COUNT(*) AS session_count
+            FROM attendances
+            WHERE date = CURDATE() AND user_id = ?
+        `;
+        const [session_count_result] = await sequelize.query(session_count_query, {
+            replacements: [user_id],
+            type: sequelize.QueryTypes.SELECT
+        });
 
-            const late_duration = moment.utc(moment(current_time_only, "HH:mm:ss").diff(moment(late_threshold_time, "HH:mm:ss"))).format("HH:mm:ss");
+        if (session_count_result.session_count >= 2) {
+            return res.status(400).json({
+                type: "error",
+                message: "You have already marked attendance for two sessions today."
+            });
+        }
+
+        // Check for split schedule to determine the session
+        if (user.working_schedule === "split" && session_count_result.session_count === 1) {
+            session = "Session 2";
+        } else if (user.working_schedule !== "split" && session_count_result.session_count > 0) {
+            return res.status(400).json({
+                type: "error",
+                message: "You already marked your attendance today!"
+            });
+        }
+
+        // Late attendance handling
+        if (current_time_only > late_threshold_time && session === "Session 1") {
+            const late_duration = moment
+                .utc(moment(current_time_only, "HH:mm:ss").diff(moment(late_threshold_time, "HH:mm:ss")))
+                .format("HH:mm:ss");
 
             const insert_late_attendance_query = `
                 INSERT INTO late_attendance (user_id, late_duration, date, created_at, updated_at)
@@ -43,7 +71,6 @@ exports.mark_attendance = async (req, res) => {
                 replacements: [user_id, late_duration, current_time, current_time],
                 type: sequelize.QueryTypes.INSERT
             });
-
 
             const count_late_entries_query = `
                 SELECT COUNT(*) AS late_count
@@ -55,31 +82,21 @@ exports.mark_attendance = async (req, res) => {
                 type: sequelize.QueryTypes.SELECT
             });
 
-            const add_late_notification_query = `
-            INSERT INTO notifications  (user_id,text,type) 
-            VALUES (?,?,?)
-            `
-            await sequelize.query(add_late_notification_query,{
-                replacements:[user_id,text,'Late Coming']
-            })
-            io.emit('late_attendance',user_id)
-
             if (late_entries.late_count > 2) {
-              
-                io.emit('late_threshold_exceeded', {
+                io.emit("late_threshold_exceeded", {
                     userId: user_id,
-                    message: `You have already arrived late ${late_entries.late_count} times this month. If you arrive late a ${late_entries.late_count +1} time, HR will deduct half a day from your leave. Be punctual tomorrow.`
+                    message: `You have already arrived late ${late_entries.late_count} times this month. If you arrive late a ${late_entries.late_count + 1} time, HR will deduct half a day from your leave. Be punctual tomorrow.`
                 });
             }
         }
 
-
+        // Mark attendance
         const mark_attendance_query = `
-            INSERT INTO attendances (date, user_id, in_time, status, login_device, login_mobile, created_by, createdAt, updatedAt)
-            VALUES (?, ?, ?, "PRESENT", ?, ?, ?, ?, ?)
+            INSERT INTO attendances (date, user_id, in_time, status, session, login_device, login_mobile, created_by, createdAt, updatedAt)
+            VALUES (?, ?, ?, "PRESENT", ?, ?, ?, ?, ?, ?)
         `;
         const [is_attendance_marked] = await sequelize.query(mark_attendance_query, {
-            replacements: [current_time, user_id, current_time, login_device, login_mobile, user_id, current_time, current_time],
+            replacements: [current_time, user_id, current_time, session, login_device, login_mobile, user_id, current_time, current_time],
             type: sequelize.QueryTypes.INSERT
         });
 
@@ -89,83 +106,252 @@ exports.mark_attendance = async (req, res) => {
 
         res.status(200).json({
             type: "success",
-            message: "Attendance marked successfully"
+            message: "Attendance marked successfully",
+            session
         });
     } catch (error) {
         console.log("ERROR::", error);
-        res.status(400).json(errorResponse(error.message));
+        res.status(400).json({ type: "error", message: error.message });
     }
 };
 
 
 
 
-exports.unmark_attendance = async (req, res) => {
-    const user_id = req.result.user_id
 
-    const { report, logout_device, logout_mobile } = req.body;
-    let current_time = moment().tz('Asia/Kolkata').format('YYYY-MM-DD HH:mm:ss');
-    let current_data = moment().tz('Asia/Kolkata').format('YYYY-MM-DD')
+
+
+// exports.mark_attendance = async (req, res) => {
+//     const io = req.app.get('io');
+//     const user_id = req.result.user_id;
+//     const { login_device, login_mobile } = req.body;
+//     const current_time = moment().tz('Asia/Kolkata').format('YYYY-MM-DD HH:mm:ss');
+//     const current_time_only = moment().tz('Asia/Kolkata').format('HH:mm:ss');
+//     const late_threshold_time = '10:07:00';
+//     const text = 'Attention: Late entry recorded. Please review your schedule to avoid further delays'
+
+//     try {
+
+//         const is_today_attendance_marked_query = `SELECT date FROM attendances WHERE date = CURDATE() AND user_id = ?`;
+//         const [is_today_attendance_marked] = await sequelize.query(is_today_attendance_marked_query, {
+//             replacements: [user_id],
+//             type: sequelize.QueryTypes.SELECT
+//         });
+
+//         if (is_today_attendance_marked) {
+//             return res.status(400).json({ type: "error", message: "You already marked your attendance!" });
+//         }
+
+
+//         if (current_time_only > late_threshold_time) {
+
+//             const late_duration = moment.utc(moment(current_time_only, "HH:mm:ss").diff(moment(late_threshold_time, "HH:mm:ss"))).format("HH:mm:ss");
+
+//             const insert_late_attendance_query = `
+//                 INSERT INTO late_attendance (user_id, late_duration, date, created_at, updated_at)
+//                 VALUES (?, ?, CURDATE(), ?, ?)
+//             `;
+//             await sequelize.query(insert_late_attendance_query, {
+//                 replacements: [user_id, late_duration, current_time, current_time],
+//                 type: sequelize.QueryTypes.INSERT
+//             });
+
+
+//             const count_late_entries_query = `
+//                 SELECT COUNT(*) AS late_count
+//                 FROM late_attendance
+//                 WHERE user_id = ? AND MONTH(date) = MONTH(CURDATE()) AND YEAR(date) = YEAR(CURDATE())
+//             `;
+//             const [late_entries] = await sequelize.query(count_late_entries_query, {
+//                 replacements: [user_id],
+//                 type: sequelize.QueryTypes.SELECT
+//             });
+
+//             const add_late_notification_query = `
+//             INSERT INTO notifications  (user_id,text,type) 
+//             VALUES (?,?,?)
+//             `
+//             await sequelize.query(add_late_notification_query,{
+//                 replacements:[user_id,text,'Late Coming']
+//             })
+//             io.emit('late_attendance',user_id)
+
+//             if (late_entries.late_count > 2) {
+
+//                 io.emit('late_threshold_exceeded', {
+//                     userId: user_id,
+//                     message: `You have already arrived late ${late_entries.late_count} times this month. If you arrive late a ${late_entries.late_count +1} time, HR will deduct half a day from your leave. Be punctual tomorrow.`
+//                 });
+//             }
+//         }
+
+
+//         const mark_attendance_query = `
+//             INSERT INTO attendances (date, user_id, in_time, status, login_device, login_mobile, created_by, createdAt, updatedAt)
+//             VALUES (?, ?, ?, "PRESENT", ?, ?, ?, ?, ?)
+//         `;
+//         const [is_attendance_marked] = await sequelize.query(mark_attendance_query, {
+//             replacements: [current_time, user_id, current_time, login_device, login_mobile, user_id, current_time, current_time],
+//             type: sequelize.QueryTypes.INSERT
+//         });
+
+//         if (!is_attendance_marked) {
+//             return res.status(400).json({ type: "error", message: "Attendance marking failed" });
+//         }
+
+//         res.status(200).json({
+//             type: "success",
+//             message: "Attendance marked successfully"
+//         });
+//     } catch (error) {
+//         console.log("ERROR::", error);
+//         res.status(400).json(errorResponse(error.message));
+//     }
+// };
+
+
+
+
+// exports.unmark_attendance = async (req, res) => {
+//     const user_id = req.result.user_id
+
+//     const { report, logout_device, logout_mobile } = req.body;
+//     let current_time = moment().tz('Asia/Kolkata').format('YYYY-MM-DD HH:mm:ss');
+//     let current_data = moment().tz('Asia/Kolkata').format('YYYY-MM-DD')
+//     try {
+//         const is_user_mark_attendance_today_query = `SELECT id,date,in_time,out_time FROM attendances WHERE date = ? AND user_id = ?`;
+//         const is_user_mark_attendance_today = await sequelize.query(is_user_mark_attendance_today_query, {
+//             replacements: [current_data, user_id],
+//             type: sequelize.QueryTypes.SELECT
+//         });
+
+//         console.log(is_user_mark_attendance_today)
+
+
+//         if (is_user_mark_attendance_today.length === 0) {
+//             return res.status(400).json(errorResponse("You have not marked your attendance today!!"));
+//         }
+
+//         if (is_user_mark_attendance_today[0]?.out_time !== null) {
+//             return res.status(400).json(errorResponse("You already unmark your attendance Thanks !!"));
+//         }
+
+//         let total_Time = find_the_total_time(is_user_mark_attendance_today[0]?.in_time)
+
+//         let total_time = convertToSeconds(total_Time)
+
+
+//         let getTotalBreakHoursQuery = `
+//         SELECT COALESCE(SEC_TO_TIME(SUM(TIME_TO_SEC(break_totaltime))), '00:00:00') AS total_break_time
+//         FROM breaks
+//         WHERE attendance_id = ${is_user_mark_attendance_today[0]?.id} 
+//         AND break_totaltime IS NOT NULL
+//     `;
+
+//         let [totalBreakTime] = await sequelize.query(getTotalBreakHoursQuery);
+//         let break_time_in_seconds = convertToSeconds(totalBreakTime[0].total_break_time);
+//         let remainingTimeInSeconds = total_time - break_time_in_seconds;
+
+
+//         let totalCaldulatedTime = convertToHHMMSS(remainingTimeInSeconds);
+
+
+//         const unmark_attendance_query = `UPDATE attendances
+//         SET 
+//             out_time = ?, 
+//             report = ?, 
+//             total_time = ? ,
+//             logout_device = ?, 
+//             logout_mobile = ?
+//         WHERE 
+//            date = ? AND 
+//            user_id = ?`;
+
+//         const result = await sequelize.query(unmark_attendance_query, {
+//             replacements: [current_time, report, totalCaldulatedTime, logout_device, logout_mobile, current_data, user_id],
+//             type: sequelize.QueryTypes.UPDATE
+//         });
+//         if (!result) return res.status(400).json(errorResponse("Error while unmarking attendance!!"));
+
+
+//         res.status(200).json(successResponse("Thankyou!"));
+//     } catch (error) {
+//         console.log("ERROR::", error)
+//         return res.status(500).json(errorResponse(error.message))
+//     }
+// };
+
+
+
+
+exports.unmark_attendance = async (req, res) => {
+    const { attendance_id, report, logout_device, logout_mobile } = req.body;
+    const current_time = moment().tz('Asia/Kolkata').format('YYYY-MM-DD HH:mm:ss');
+
+    if (!attendance_id) {
+        return res.status(400).json(errorResponse("Attendance ID is required."));
+    }
+
     try {
-        const is_user_mark_attendance_today_query = `SELECT id,date,in_time,out_time FROM attendances WHERE date = ? AND user_id = ?`;
-        const is_user_mark_attendance_today = await sequelize.query(is_user_mark_attendance_today_query, {
-            replacements: [current_data, user_id],
+
+        const attendance_query = `SELECT id, in_time, out_time, date FROM attendances WHERE id = ?`;
+        const [attendance] = await sequelize.query(attendance_query, {
+            replacements: [attendance_id],
             type: sequelize.QueryTypes.SELECT
         });
 
-        console.log(is_user_mark_attendance_today)
-
-
-        if (is_user_mark_attendance_today.length === 0) {
-            return res.status(400).json(errorResponse("You have not marked your attendance today!!"));
+        if (!attendance) {
+            return res.status(404).json(errorResponse("Attendance record not found."));
         }
 
-        if (is_user_mark_attendance_today[0]?.out_time !== null) {
-            return res.status(400).json(errorResponse("You already unmark your attendance Thanks !!"));
+        if (attendance.out_time !== null) {
+            return res.status(400).json(errorResponse("Attendance already unmarked."));
         }
 
-        let total_Time = find_the_total_time(is_user_mark_attendance_today[0]?.in_time)
 
-        let total_time = convertToSeconds(total_Time)
-
-
-        let getTotalBreakHoursQuery = `
-        SELECT COALESCE(SEC_TO_TIME(SUM(TIME_TO_SEC(break_totaltime))), '00:00:00') AS total_break_time
-        FROM breaks
-        WHERE attendance_id = ${is_user_mark_attendance_today[0]?.id} 
-        AND break_totaltime IS NOT NULL
-    `;
-
-        let [totalBreakTime] = await sequelize.query(getTotalBreakHoursQuery);
-        let break_time_in_seconds = convertToSeconds(totalBreakTime[0].total_break_time);
-        let remainingTimeInSeconds = total_time - break_time_in_seconds;
+        const in_time_full = `${attendance.date} ${attendance.in_time}`;
+        const total_time_in_seconds = moment(current_time).diff(moment(in_time_full), 'seconds');
 
 
-        let totalCaldulatedTime = convertToHHMMSS(remainingTimeInSeconds);
+        const getTotalBreakHoursQuery = `
+            SELECT COALESCE(SEC_TO_TIME(SUM(TIME_TO_SEC(break_totaltime))), '00:00:00') AS total_break_time
+            FROM breaks
+            WHERE attendance_id = ? AND break_totaltime IS NOT NULL
+        `;
+        const [totalBreakTime] = await sequelize.query(getTotalBreakHoursQuery, {
+            replacements: [attendance_id],
+            type: sequelize.QueryTypes.SELECT
+        });
+
+        const break_time_in_seconds = convertToSeconds(totalBreakTime.total_break_time);
+        const remaining_time_in_seconds = total_time_in_seconds - break_time_in_seconds;
+
+        const calculated_total_time = convertToHHMMSS(remaining_time_in_seconds);
 
 
-        const unmark_attendance_query = `UPDATE attendances
-        SET 
-            out_time = ?, 
-            report = ?, 
-            total_time = ? ,
-            logout_device = ?, 
-            logout_mobile = ?
-        WHERE 
-           date = ? AND 
-           user_id = ?`;
-
-        const result = await sequelize.query(unmark_attendance_query, {
-            replacements: [current_time, report, totalCaldulatedTime, logout_device, logout_mobile, current_data, user_id],
+        const unmark_attendance_query = `
+            UPDATE attendances
+            SET 
+                out_time = ?, 
+                report = ?, 
+                total_time = ?, 
+                logout_device = ?, 
+                logout_mobile = ?
+            WHERE id = ?
+        `;
+        const [updateResult] = await sequelize.query(unmark_attendance_query, {
+            replacements: [current_time, report, calculated_total_time, logout_device, logout_mobile, attendance_id],
             type: sequelize.QueryTypes.UPDATE
         });
-        if (!result) return res.status(400).json(errorResponse("Error while unmarking attendance!!"));
 
+        if (updateResult === 0) {
+            return res.status(400).json(errorResponse("Error while unmarking attendance."));
+        }
 
-        res.status(200).json(successResponse("Thankyou!"));
+        return res.status(200).json(successResponse("Attendance unmarked successfully."));
     } catch (error) {
-        console.log("ERROR::", error)
-        return res.status(500).json(errorResponse(error.message))
+        console.log("ERROR::", error);
+        return res.status(500).json(errorResponse(error.message));
     }
 };
 

@@ -72,6 +72,11 @@ module.exports = {
                 type: Sequelize.INTEGER,
                 allowNull: true,
             },
+            session: {
+                type: Sequelize.STRING(20),
+                allowNull: true,
+                defaultValue: 'Session 1', 
+            },
             createdAt: {
                 type: Sequelize.DATE,
                 allowNull: false,

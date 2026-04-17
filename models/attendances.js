@@ -72,6 +72,11 @@ module.exports = (sequelize) => {
       type: DataTypes.INTEGER,
       allowNull: true,
     },
+    session: {
+      type: DataTypes.STRING(20),
+      allowNull: true,
+      defaultValue: 'Session 1',
+    },
     createdAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,

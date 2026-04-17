@@ -748,11 +748,11 @@ exports.get_employee_montly_leave_report = async (req, res) => {
 
 
 
-        
-           const validLeaveTypes = ['SICK LEAVE', 'URGENT LEAVE', 'CASUAL', 'HALF DAY', 'SHORT DAY'];
 
-        
-      
+        const validLeaveTypes = ['SICK LEAVE', 'URGENT LEAVE', 'CASUAL', 'HALF DAY', 'SHORT DAY'];
+
+
+
         const leaveCounts = validLeaveTypes.reduce((acc, type) => {
             const formattedType = type.replace(/ /g, '_');
             acc[formattedType] = 0;
@@ -767,7 +767,7 @@ exports.get_employee_montly_leave_report = async (req, res) => {
             }
         });
 
-       
+
         leaveCounts["late_count"] = late_entries.late_count || 0;
         leaveCounts["absent"] = 0;
 
