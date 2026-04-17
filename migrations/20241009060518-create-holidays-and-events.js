@@ -1,17 +1,28 @@
 'use strict';
-// @type {import('sequelize-cli').Migration} /
 
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('Permissions', {
+    await queryInterface.createTable('holidays_and_events', {
       id: {
         allowNull: false,
         primaryKey: true,
-        type: Sequelize.INTEGER, // Change to INTEGER for auto-incrementing
-        autoIncrement: true, // Add this line for auto-incrementing
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
       },
-      permission: {
+      occasion_name: {
         type: Sequelize.STRING,
+        allowNull: false,
+      },
+      occasion_type: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      occasion_description: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      date: {
+        type: Sequelize.DATE,
         allowNull: false,
       },
       createdAt: {
@@ -23,11 +34,12 @@ module.exports = {
         allowNull: false,
         type: Sequelize.DATE,
         defaultValue: Sequelize.NOW,
+        onUpdate: Sequelize.NOW,
       },
     });
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('Permissions');
+    await queryInterface.dropTable('holidays_and_events');
   },
 };

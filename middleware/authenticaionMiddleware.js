@@ -1,34 +1,41 @@
-const jwt = require('jsonwebtoken');
+let jwt = require('jsonwebtoken');
+const config = require('../config/config');
+const getLatestRoles = require("../utils/getLatestRoles")
+const {errorResponse,successResponse} = require("../utils/responseHandler")
 
 
 
-const authenticateToken = (req, res, next) => {
-    
-    const authHeader = req.headers['authorization'];
+let verifyToken = async (req, res, next) => {
+    try {
+        let token = req.headers.authorization;
 
-    if (!authHeader) { return res.status(401).json({ type: "error", message: "Authorization header missing" }); }
+        if (token) {
 
-    const token = authHeader.split(' ')[1];
+            token = token.split(' ')[1];
 
-    if (!token) {return res.status(401).json({ type: "error", message: "Token missing" }); }
+            let decoded = jwt.verify(token, config.development.secret_key);
+        
+            const { user_id } = decoded;
+         
+            let roles = await getLatestRoles(user_id)
+            
+            req.result = {
+                ...decoded,
+                roles: [...new Set([...(decoded.roles || []), ...roles])],
+            };
+           
+        } else {
+            return res.status(401).json(errorResponse("Token is required for authentication"));
+        }
+        
+        next();
 
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-
-        if (err) { return res.status(403).json({ type: "error", message: "Token is invalid or expired" }); }
-
-        if (!user.roles || !Array.isArray(user.roles)) {return res.status(403).json({ type: "error", message: "Invalid user roles data" }); }
-
-        const isAdmin = user.roles.some(role => role.role_name === 'Admin');
-
-        if (!isAdmin) { return res.status(403).json({ type: "error", message: "You don't have permission to create users only HR can create new user" }); }
-
-        req.user = user; 
-
-        next(); 
-    });
+    } catch (error) {
+        console.log("ERROR::", error);
+        return res.status(401).json(errorResponse("Unauthorized user"));
+    }
 };
 
-module.exports = authenticateToken;
 
 
-
+module.exports = verifyToken;

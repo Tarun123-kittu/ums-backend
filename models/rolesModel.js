@@ -1,17 +1,21 @@
 const { Model, DataTypes } = require('sequelize');
 
 module.exports = (sequelize) => {
-  class Role extends Model { }
+  class Roles extends Model {}
 
-  Role.init({
+  Roles.init({
     id: {
-      type: DataTypes.INTEGER, // Changed to INTEGER for auto-incrementing
-      autoIncrement: true, // Added for auto-increment
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
       primaryKey: true,
     },
     role: {
       type: DataTypes.STRING,
       allowNull: false,
+    },
+    is_disabled: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
     },
     createdAt: {
       type: DataTypes.DATE,
@@ -24,9 +28,9 @@ module.exports = (sequelize) => {
   }, {
     sequelize,
     modelName: 'Role',
-    tableName: 'Roles',
+    tableName: 'roles',
     timestamps: true,
   });
 
-  return Role;
+  return Roles;
 };

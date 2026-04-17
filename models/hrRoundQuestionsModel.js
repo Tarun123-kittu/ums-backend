@@ -1,22 +1,17 @@
 const { Model, DataTypes } = require('sequelize');
 
 module.exports = (sequelize) => {
-  class Permission extends Model { }
+  class HR_Round_Questions extends Model {}
 
-  Permission.init({
+  HR_Round_Questions.init({
     id: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true,
     },
-    permission: {
-      type: DataTypes.STRING,
+    question: {
+      type: DataTypes.TEXT,
       allowNull: false,
-    },
-    is_disabled: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
-      defaultValue: false,
     },
     createdAt: {
       type: DataTypes.DATE,
@@ -28,10 +23,10 @@ module.exports = (sequelize) => {
     },
   }, {
     sequelize,
-    modelName: 'Permission',
-    tableName: 'Permissions',
+    modelName: 'HR_Round_Questions',
+    tableName: 'HR_Round_Questions',
     timestamps: true,
   });
 
-  return Permission;
+  return HR_Round_Questions;
 };

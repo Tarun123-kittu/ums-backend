@@ -1,22 +1,17 @@
 const { Model, DataTypes } = require('sequelize');
 
 module.exports = (sequelize) => {
-  class Permission extends Model { }
+  class Languages extends Model {}
 
-  Permission.init({
+  Languages.init({
     id: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true,
     },
-    permission: {
+    language: {
       type: DataTypes.STRING,
       allowNull: false,
-    },
-    is_disabled: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
-      defaultValue: false,
     },
     createdAt: {
       type: DataTypes.DATE,
@@ -28,10 +23,10 @@ module.exports = (sequelize) => {
     },
   }, {
     sequelize,
-    modelName: 'Permission',
-    tableName: 'Permissions',
-    timestamps: true,
+    modelName: 'Language',
+    tableName: 'languages', 
+    timestamps: true, 
   });
 
-  return Permission;
+  return Languages;
 };

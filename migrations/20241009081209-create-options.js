@@ -1,16 +1,25 @@
 'use strict';
-// @type {import('sequelize-cli').Migration} /
 
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('Roles', {
+    await queryInterface.createTable('options', {
       id: {
         allowNull: false,
         primaryKey: true,
-        type: Sequelize.INTEGER, // Change to INTEGER for auto-incrementing
-        autoIncrement: true, // Add this line for auto-incrementing
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
       },
-      role: {
+      question_id: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'technical_round_questions', 
+          key: 'id',
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE',
+      },
+      option: {
         type: Sequelize.STRING,
         allowNull: false,
       },
@@ -28,6 +37,6 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('Roles');
+    await queryInterface.dropTable('options');
   },
 };
