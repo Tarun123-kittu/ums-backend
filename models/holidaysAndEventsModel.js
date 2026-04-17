@@ -37,8 +37,8 @@ HolidayAndEvent.init(
           },
         }, {
           sequelize,
-          modelName: 'InterviewLead',
-          tableName: 'Interview_Leads',
+                    modelName: 'HolidayAndEvent',
+                    tableName: 'holidays_and_events',
           timestamps: true,
         });
 

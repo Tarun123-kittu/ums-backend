@@ -37,11 +37,11 @@ exports.get_roles_and_users = async (req, res) => {
                 u.username, 
                 u.id AS user_id
             FROM 
-                Roles r
+                roles r
             LEFT JOIN 
                 user_roles ur ON r.id = ur.role_id AND ur.is_disabled = false
             LEFT JOIN 
-                Users u ON ur.user_id = u.id
+                users u ON ur.user_id = u.id
             WHERE r.is_disabled = false    
         `, {
             type: sequelize.QueryTypes.SELECT

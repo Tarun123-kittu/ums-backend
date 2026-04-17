@@ -70,6 +70,6 @@ module.exports = {
     },
 
     down: async (queryInterface, Sequelize) => {
-        await queryInterface.bulkDelete('Languages', null, {});
+        await queryInterface.bulkDelete('languages', null, {});
     }
 };

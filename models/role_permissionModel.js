@@ -13,7 +13,7 @@ module.exports = (sequelize) => {
     role_id: {
       type: DataTypes.INTEGER, 
       references: {
-        model: 'Roles',
+        model: 'roles',
         key: 'id',
       },
       onUpdate: 'CASCADE', 
@@ -22,7 +22,7 @@ module.exports = (sequelize) => {
     permission_id: {
       type: DataTypes.INTEGER, 
       references: {
-        model: 'Permissions',
+        model: 'permissions',
         key: 'id',
       },
       onUpdate: 'CASCADE', 

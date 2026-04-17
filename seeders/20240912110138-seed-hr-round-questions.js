@@ -3,7 +3,7 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
    
-    await queryInterface.bulkInsert('HR_Round_Questions', [
+    await queryInterface.bulkInsert('hr_round_questions', [
       {
         question: 'What motivates you in the workplace?',
         createdAt: new Date(),
@@ -34,6 +34,6 @@ module.exports = {
 
   async down(queryInterface, Sequelize) {
   
-    await queryInterface.bulkDelete('HR_Round_Questions', null, {});
+    await queryInterface.bulkDelete('hr_round_questions', null, {});
   }
 };

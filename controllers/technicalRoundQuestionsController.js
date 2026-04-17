@@ -1109,7 +1109,7 @@ exports.technical_round_result = async (req, res) => {
         if (checkInterview.length < 1) { return res.status(400).json(errorResponse("Interview not exist with this interview id")) }
 
         const [affectedRows] = await sequelize.query(
-            'UPDATE Interviews SET technical_round_result = ?, developer_review = ? ,	technical_round_checked_by=?,updatedAt=?  WHERE id = ?',
+            'UPDATE interviews SET technical_round_result = ?, developer_review = ? ,	technical_round_checked_by=?,updatedAt=?  WHERE id = ?',
             {
                 replacements: [technical_round_result, developer_review, user[0].name, currentDate, interview_id],
                 type: sequelize.QueryTypes.UPDATE,

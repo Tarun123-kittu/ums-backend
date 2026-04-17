@@ -9,7 +9,7 @@ const { send_email } = require("../utils/commonFuntions")
 
 exports.get_hr_round_questions = async (req, res) => {
   try {
-    const getSeriesQuery = `SELECT id,question FROM HR_Round_Questions `;
+    const getSeriesQuery = `SELECT id,question FROM hr_round_questions `;
 
     const [questions] = await sequelize.query(getSeriesQuery);
 
@@ -50,7 +50,7 @@ exports.hr_round = async (req, res) => {
 
 
     const [interviewResult] = await sequelize.query(
-      'INSERT INTO Interviews (lead_id, interview_link_click_count, hr_round_result, technical_round_result, createdAt, updatedAt) VALUES (?, ?, ?, ?, NOW(), NOW())',
+      'INSERT INTO interviews (lead_id, interview_link_click_count, hr_round_result, technical_round_result, createdAt, updatedAt) VALUES (?, ?, ?, ?, NOW(), NOW())',
       {
         replacements: [lead_id, 0, 'Pending', 'Pending'],
         type: sequelize.QueryTypes.INSERT,
@@ -66,7 +66,7 @@ exports.hr_round = async (req, res) => {
 
 
       const [question] = await sequelize.query(
-        'SELECT * FROM HR_Round_Questions WHERE id = ?',
+        'SELECT * FROM hr_round_questions WHERE id = ?',
         {
           replacements: [questionid],
           type: sequelize.QueryTypes.SELECT,
@@ -81,7 +81,7 @@ exports.hr_round = async (req, res) => {
 
 
       await sequelize.query(
-        'INSERT INTO HR_Rounds (interview_id, lead_id, questionid, answer) VALUES (?, ?, ?, ?)',
+        'INSERT INTO hr_rounds (interview_id, lead_id, questionid, answer) VALUES (?, ?, ?, ?)',
         {
           replacements: [interview_id, lead_id, questionid, answer],
           type: sequelize.QueryTypes.INSERT,
@@ -132,7 +132,7 @@ exports.hr_round_result = async (req, res) => {
 
 
     const [affectedRows] = await sequelize.query(
-      'UPDATE Interviews SET hr_round_result = ?,updatedAt = ? WHERE id = ?',
+      'UPDATE interviews SET hr_round_result = ?,updatedAt = ? WHERE id = ?',
       {
         replacements: [hr_round_result, currentDate, interview_id],
         type: sequelize.QueryTypes.UPDATE,
@@ -168,7 +168,7 @@ exports.update_lead_response = async (req, res) => {
     const transaction = await sequelize.transaction();
 
     const [affectedRows] = await sequelize.query(
-      'UPDATE HR_Rounds SET answer = :answer WHERE id = :id',
+      'UPDATE hr_rounds SET answer = :answer WHERE id = :id',
       {
         replacements: { answer, id },
         type: sequelize.QueryTypes.UPDATE,
