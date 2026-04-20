@@ -18,9 +18,9 @@ module.exports = {
       connectTimeout: 10000
     },
     pool: {
-      max: 5,
+      max: 2,
       min: 0,
-      acquire: 30000,
+      acquire: 60000,
       idle: 10000
     }
   },
