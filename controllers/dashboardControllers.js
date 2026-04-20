@@ -701,7 +701,7 @@ exports.mark_notifications_as_read = async (req, res) => {
 
 
 
-exports.get_employee_montly_leave_report = async (req, res) => {
+exports.get_employee_monthly_leave_report = async (req, res) => {
     try {
         let userId = req.result.user_id
 
@@ -780,4 +780,6 @@ exports.get_employee_montly_leave_report = async (req, res) => {
         return res.status(500).json(errorResponse(error.message))
     }
 }
+
+exports.get_employee_montly_leave_report = exports.get_employee_monthly_leave_report
 
