@@ -537,7 +537,9 @@ exports.get_permissions = async (req, res) => {
     try {
        let getPermissionsQuery = `SELECT permission, id as permission_id FROM permissions WHERE is_disabled = false`
 
-       let [allPermissions] = await sequelize.query(getPermissionsQuery)
+       let allPermissions = await sequelize.query(getPermissionsQuery, {
+            type: sequelize.QueryTypes.SELECT
+       })
 
        return res.status(200).json(successResponse('Data retrieved successfully',allPermissions))
     } catch (error) {
