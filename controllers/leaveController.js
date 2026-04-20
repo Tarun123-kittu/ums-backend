@@ -143,7 +143,13 @@ exports.apply_leave = async (req, res) => {
         await send_email({
             email: 'hr@ultivic.com',
             subject: `Leave Application`,
-            message: `Hey ${username} applied for ${leaveDays} days for ${description}`
+            message: `Hey ${username} applied for ${leaveDays} days for ${description}`,
+            template: 'leave-application',
+            locals: {
+                username,
+                leaveDays,
+                description,
+            }
         });
 
         await t.commit();
@@ -403,7 +409,14 @@ exports.update_pending_leave = async (req, res) => {
         await send_email({
             email: email,
             subject: `Leave Status`,
-            message: `Hey ${name}, your leave application from ${from_date} to ${to_date} has been ${status}`
+            message: `Hey ${name}, your leave application from ${from_date} to ${to_date} has been ${status}`,
+            template: 'leave-status',
+            locals: {
+                name,
+                fromDate: from_date,
+                toDate: to_date,
+                status,
+            }
         });
 
         await transaction.commit();

@@ -2,10 +2,15 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto')
 const bcrypt = require('bcrypt');
 const nodemailer = require('nodemailer');
+const fs = require('fs/promises');
+const path = require('path');
 require('dotenv').config();
 const saltRounds = 10;
 const config = require("../config/config")
 const moment = require('moment-timezone');
+
+const emailTemplateDirectory = path.join(__dirname, '..', 'views', 'emails');
+const emailLogoPath = path.join(__dirname, '..', 'public', 'images', 'ultivic_230.png');
 
 
 
@@ -68,24 +73,63 @@ const password_compare = async (user_password, password) => {
 
 
 
+const escape_html = (value) => {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+
+
+
+
+const render_email_template = async (templateName, locals = {}) => {
+    const normalizedTemplateName = templateName.endsWith('.html') ? templateName : `${templateName}.html`;
+    const templatePath = path.join(emailTemplateDirectory, normalizedTemplateName);
+    const templateSource = await fs.readFile(templatePath, 'utf8');
+
+    return templateSource.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_, key) => {
+        return escape_html(locals[key]);
+    });
+}
+
+
+
+
+
 const send_email = async (options) => {
     try {
+        const emailPort = Number(config.development.email_port);
         const transporter = nodemailer.createTransport({
             host: config.development.email_host,
-            secure: config.development.email_port === '465',
+            port: emailPort,
+            secure: emailPort === 465,
             auth: {
                 user: config.development.email_username,
                 pass: config.development.email_password,
             }
         });
 
+        const html = options.html || (options.template ? await render_email_template(options.template, options.locals) : undefined);
+
 
         const mailOptions = {
-            from: 'Ultivic Technologies',
+            from: 'Ultivic',
             to: options.email,
             subject: options.subject,
-            text: options.text,
-            html: options.html
+            text: options.text || options.message,
+            html,
+            attachments: [
+                {
+                    filename: 'ultivic_230.png',
+                    path: emailLogoPath,
+                    cid: 'ultivic-logo'
+                },
+                ...(options.attachments || [])
+            ]
         };
 
         await transporter.sendMail(mailOptions);
@@ -142,6 +186,6 @@ function convertToHHMMSS(seconds) {
 
 
 
-module.exports = { createToken, passwordResetToken, encrypt_password, password_compare, send_email, find_the_total_time,convertToSeconds,convertToHHMMSS }
+module.exports = { createToken, passwordResetToken, encrypt_password, password_compare, send_email, render_email_template, find_the_total_time,convertToSeconds,convertToHHMMSS }
 
 
