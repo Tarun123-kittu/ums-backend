@@ -13,6 +13,10 @@ module.exports = (sequelize) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
+    label: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
     is_disabled: {
       type: DataTypes.BOOLEAN,
       allowNull: false,

@@ -286,6 +286,7 @@ exports.login = async (req, res) => {
       u.username, 
       u.name,
       u.password, 
+      p.label AS permission_label,
       u.working_schedule,
       r.role AS role_name, 
       p.permission AS permission_name,
@@ -326,10 +327,11 @@ exports.login = async (req, res) => {
     const roles = [...new Set(userRolesData.map(roleData => roleData.role_name))];
 
     const permissions = userRolesData.reduce((acc, roleData) => {
-      const { permission_name, can_view, can_update, can_create, can_delete } = roleData;
+      const { permission_name, permission_label, can_view, can_update, can_create, can_delete } = roleData;
 
       acc.push({
         name: permission_name,
+        label: permission_label,
         can_view,
         can_update,
         can_create,

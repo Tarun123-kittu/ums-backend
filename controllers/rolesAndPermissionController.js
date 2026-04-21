@@ -415,7 +415,7 @@ exports.get_roles_permissions = async (req, res) => {
         if (!id) {
             const roles_permissions_query = `
              SELECT rp.can_view,rp.can_delete,rp.can_update,
-             rp.can_create,r.role,p.permission,p.id AS permission_id,
+             rp.can_create,r.role,p.permission,p.label,p.id AS permission_id,
              r.id AS role_id FROM user_roles
               ur JOIN roles_permissions rp ON rp.role_id = ur.role_id 
               JOIN permissions p ON p.id = rp.permission_id
@@ -441,6 +441,7 @@ exports.get_roles_permissions = async (req, res) => {
                     rp.can_update, 
                     rp.can_delete, 
                     p.permission, 
+                    p.label,
                     r.role, 
                     r.id AS role_id, 
                     p.id AS permission_id
@@ -535,7 +536,7 @@ exports.get_all_roles = async (req, res) => {
 
 exports.get_permissions = async (req, res) => {
     try {
-       let getPermissionsQuery = `SELECT permission, id as permission_id FROM permissions WHERE is_disabled = false`
+    let getPermissionsQuery = `SELECT permission, label, id as permission_id FROM permissions WHERE is_disabled = false`
 
        let allPermissions = await sequelize.query(getPermissionsQuery, {
             type: sequelize.QueryTypes.SELECT

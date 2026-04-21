@@ -5,6 +5,7 @@ const getPermissionsForRoles = async (rolesArray) => {
     SELECT
         r.role AS role_name,
         p.permission AS permission_name,
+      p.label AS permission_label,
         rp.can_view,
         rp.can_update,
         rp.can_create,
@@ -34,8 +35,9 @@ const getPermissionsForRoles = async (rolesArray) => {
       role_name: role,
       permissions: permissionsData
         .filter((permissionData) => permissionData.role_name === role)
-        .map(({ permission_name, can_view, can_update, can_create, can_delete }) => ({
+        .map(({ permission_name, permission_label, can_view, can_update, can_create, can_delete }) => ({
           permission_name,
+          permission_label,
           can_view,
           can_update,
           can_create,
