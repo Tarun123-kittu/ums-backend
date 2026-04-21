@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon index.js",
-    "migrate": "sequelize db:migrate",
+    "migrate": "node scripts/migrate.js",
+    "migrate:fresh": "node scripts/migrate.js --clear",
     "seed": "sequelize db:seed:all"
   },
   "author": "",
