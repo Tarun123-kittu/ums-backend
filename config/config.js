@@ -15,11 +15,11 @@ module.exports = {
     dialect: 'mysql',
 
     dialectOptions: {
-      connectTimeout: 10000
+      connectTimeout: 20000
     },
     pool: {
-      max: 2,
-      min: 0,
+      max: 20,
+      min: 2,
       acquire: 60000,
       idle: 10000
     }
