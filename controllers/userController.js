@@ -385,7 +385,7 @@ exports.forgot_password = async (req, res) => {
 
     if (isUserUpdated) { return res.status(400).json(errorResponse("Unable to generate the key, please try again later")); }
 
-    const resetUrl = `${process.env.FRONTEND_URL}/reset_password/${resetToken}`;
+    const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
     const message = `You can reset your password from this URL ${resetUrl}. Ignore if you don't need to reset your password.`;
 
     await send_email({
