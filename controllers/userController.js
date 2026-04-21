@@ -518,6 +518,14 @@ exports.get_employee_details = async(req,res)=>{
       type: sequelize.QueryTypes.SELECT
     });
 
+    const employeeDocuments = await sequelize.query(
+      `SELECT document_name FROM documents WHERE user_id = ?`,
+      {
+        replacements: [id],
+        type: sequelize.QueryTypes.SELECT
+      }
+    );
+
     if (!employee_details || employee_details.length === 0) {
       return res.status(400).json({
         type: "error",
@@ -525,9 +533,14 @@ exports.get_employee_details = async(req,res)=>{
       });
     }
 
+    const employeeData = employee_details.map((employee) => ({
+      ...employee,
+      documents: employeeDocuments.map(({ document_name }) => document_name),
+    }));
+
     return res.status(200).json({
       type: "success",
-      data: employee_details,
+      data: employeeData,
     });
   } catch (error) {
     return res.status(400).json({
@@ -617,10 +630,44 @@ exports.get_employees = async (req, res) => {
       });
     }
 
+    const employeeIds = employee_details.map(({ id }) => id);
+    let rolesByUserId = {};
+
+    if (employeeIds.length > 0) {
+      const employeeRoles = await sequelize.query(
+        `
+          SELECT ur.user_id, r.id AS role_id, r.role
+          FROM user_roles ur
+          JOIN roles r ON r.id = ur.role_id
+          WHERE ur.is_disabled = false
+            AND r.is_disabled = false
+            AND ur.user_id IN (:employeeIds)
+        `,
+        {
+          replacements: { employeeIds },
+          type: sequelize.QueryTypes.SELECT,
+        }
+      );
+
+      rolesByUserId = employeeRoles.reduce((acc, { user_id, role_id, role }) => {
+        if (!acc[user_id]) {
+          acc[user_id] = [];
+        }
+
+        acc[user_id].push({ role_id, role });
+        return acc;
+      }, {});
+    }
+
+    const employeeData = employee_details.map((employee) => ({
+      ...employee,
+      roles: rolesByUserId[employee.id] || [],
+    }));
+
 
     return res.status(200).json({
       type: "success",
-      data: employee_details,
+      data: employeeData,
       total_pages: totalPages,
       current_page: parseInt(page, 10),
       total_employees: totalEmployees,
