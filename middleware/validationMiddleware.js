@@ -235,8 +235,42 @@ const validateUpdateRolesPermission = [
 
 
 const assignRoleValidations = [
-    check("user_id", "User ID is required and must be an integer").not().isEmpty().isInt(),
-    check("role_id", "Role ID is required and must be an integer").not().isEmpty().isInt(),
+    body().custom((value, { req }) => {
+        const assignments = Array.isArray(value) ? value : [value];
+
+        if (!assignments.length) {
+            throw new Error("Request body must contain at least one role assignment.");
+        }
+
+        assignments.forEach((assignment, index) => {
+            if (!assignment || typeof assignment !== 'object' || Array.isArray(assignment)) {
+                throw new Error(`Assignment at index ${index} must be an object.`);
+            }
+
+            if (assignment.user_id === undefined || assignment.user_id === null || assignment.user_id === '') {
+                throw new Error(`user_id is required at index ${index}.`);
+            }
+
+            if (!Number.isInteger(Number(assignment.user_id))) {
+                throw new Error(`user_id must be an integer at index ${index}.`);
+            }
+
+            if (assignment.role_id === undefined || assignment.role_id === null || assignment.role_id === '') {
+                throw new Error(`role_id is required at index ${index}.`);
+            }
+
+            if (!Number.isInteger(Number(assignment.role_id))) {
+                throw new Error(`role_id must be an integer at index ${index}.`);
+            }
+        });
+
+        req.body = assignments.map(({ user_id, role_id }) => ({
+            user_id: Number(user_id),
+            role_id: Number(role_id),
+        }));
+
+        return true;
+    }),
     (req, res, next) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {

@@ -79,39 +79,57 @@ exports.get_roles_and_users = async (req, res) => {
 
 
 exports.assign_role = async (req, res) => {
-    const { user_id, role_id } = req.body;
     try {
-        const check_existing_role_query = `
-            SELECT * FROM user_roles 
-            WHERE user_id = ? AND role_id = ?`;
+        const assignments = Array.isArray(req.body) ? req.body : [req.body];
+        const uniqueAssignments = [];
+        const seenAssignments = new Set();
 
-        const existingRole = await sequelize.query(check_existing_role_query, {
-            replacements: [user_id, role_id],
+        for (const assignment of assignments) {
+            const assignmentKey = `${assignment.user_id}:${assignment.role_id}`;
+
+            if (seenAssignments.has(assignmentKey)) {
+                return res.status(400).json(errorResponse("Duplicate user-role assignments are not allowed in the same request."));
+            }
+
+            seenAssignments.add(assignmentKey);
+            uniqueAssignments.push(assignment);
+        }
+
+        const checkExistingRoleQuery = `
+            SELECT user_id, role_id FROM user_roles
+            WHERE is_disabled = false AND (
+                ${uniqueAssignments.map(() => '(user_id = ? AND role_id = ?)').join(' OR ')}
+            )`;
+
+        const existingRoles = await sequelize.query(checkExistingRoleQuery, {
+            replacements: uniqueAssignments.flatMap(({ user_id, role_id }) => [user_id, role_id]),
             type: sequelize.QueryTypes.SELECT
         });
 
-        if (existingRole.length > 0) {
-            return res.status(400).json(errorResponse("This role is already assigned to the user."));
+        if (existingRoles.length > 0) {
+            const duplicateAssignments = existingRoles.map(({ user_id, role_id }) => ({ user_id, role_id }));
+            return res.status(400).json(errorResponse(`Some roles are already assigned: ${JSON.stringify(duplicateAssignments)}`));
         }
 
+        await sequelize.transaction(async (transaction) => {
+            const insertAssignmentsQuery = `
+                INSERT INTO user_roles (user_id, role_id, createdAt, updatedAt)
+                VALUES ${uniqueAssignments.map(() => '(?, ?, NOW(), NOW())').join(', ')}`;
 
-        const assign_new_role_query = `
-            INSERT INTO user_roles (user_id, role_id, createdAt, updatedAt) 
-            VALUES (?, ?, NOW(), NOW())`;
-
-        const is_role_assigned = await sequelize.query(assign_new_role_query, {
-            replacements: [user_id, role_id],
-            type: sequelize.QueryTypes.INSERT
+            await sequelize.query(insertAssignmentsQuery, {
+                replacements: uniqueAssignments.flatMap(({ user_id, role_id }) => [user_id, role_id]),
+                type: sequelize.QueryTypes.INSERT,
+                transaction,
+            });
         });
 
-        if (!is_role_assigned) {
-            return res.status(400).json(errorResponse("Failed to assign role."));
-        }
-
-        return res.status(200).json(successResponse("Role assigned to the user successfully."));
+        return res.status(200).json(successResponse(`${uniqueAssignments.length} role assignment(s) created successfully.`));
 
     } catch (error) {
         console.log('ERROR::',error)
+        if (error.message.includes('foreign key constraint fails')) {
+            return res.status(400).json(errorResponse('One or more user_id or role_id values do not exist.'));
+        }
         return res.status(500).json(errorResponse(error.message));
     }
 };
