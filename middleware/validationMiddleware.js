@@ -1,24 +1,72 @@
 const { check, validationResult, body } = require('express-validator')
 const { errorResponse, successResponse } = require('../utils/responseHandler')
+const { sequelize } = require('../models')
 
 
 const createUserValidator = [
     // Required fields
-    check("name", "Name is required.").not().isEmpty(),
-    check("username", "Username is required.").not().isEmpty(),
-    check("email", "Email is required.").not().isEmpty().isEmail().withMessage("Please enter a correct email format."),
-    check("mobile", "Mobile number is required.").not().isEmpty().isLength({ min: 10, max: 10 }).isNumeric().withMessage("Mobile number must be numeric and 10 digits."),
-    check("gender", "Gender is required.").not().isEmpty(),
-    check("dob", "Date of birth is required.").not().isEmpty().isISO8601().withMessage("Invalid date format for DOB. Use YYYY-MM-DD."),
-    check("doj", "Date of joining is required.").not().isEmpty().isISO8601().withMessage("Invalid date format for DOJ. Use YYYY-MM-DD."),
-    check("position", "Position is required.").not().isEmpty(),
-    check("department", "Department is required.").not().isEmpty(),
-    check("status", "Status is required.").not().isEmpty(),
-    check("password", "Please enter your password.").not().isEmpty(),
-    check("address", "Address is required.").not().isEmpty(),
-    check("role", "Role is required.").not().isEmpty(),
-    check("working_schedule","Working schedule is required").not().isEmpty(),
+    check("name").not().isEmpty().withMessage("Name is required."),
+    check("username").not().isEmpty().withMessage("Username is required."),
+    body("username").custom(async (value) => {
+        const [existing] = await sequelize.query(
+            'SELECT id FROM users WHERE username = ? AND is_disabled = false',
+            { replacements: [value], type: sequelize.QueryTypes.SELECT }
+        );
+        if (existing) throw new Error('Username already exists.');
+    }),
+    check("email")
+        .not().isEmpty().withMessage("Email is required.")
+        .bail()
+        .isEmail().withMessage("Please enter a correct email format."),
+    check("mobile")
+        .not().isEmpty().withMessage("Mobile number is required.")
+        .bail()
+        .isLength({ min: 10, max: 10 }).withMessage("Mobile number must be exactly 10 digits.")
+        .bail()
+        .isNumeric().withMessage("Mobile number must contain only numeric digits."),
+    check("gender").not().isEmpty().withMessage("Gender is required."),
+    check("dob")
+        .not().isEmpty().withMessage("Date of birth is required.")
+        .bail()
+        .isISO8601().withMessage("Invalid date format for DOB. Use YYYY-MM-DD."),
+    check("doj")
+        .not().isEmpty().withMessage("Date of joining is required.")
+        .bail()
+        .isISO8601().withMessage("Invalid date format for DOJ. Use YYYY-MM-DD."),
+    check("position").not().isEmpty().withMessage("Position is required."),
+    check("department").not().isEmpty().withMessage("Department is required."),
+    check("status").not().isEmpty().withMessage("Status is required."),
+    check("password").not().isEmpty().withMessage("Please enter your password."),
+    check("address").not().isEmpty().withMessage("Address is required."),
+    check("role").not().isEmpty().withMessage("Role is required."),
+    check("working_schedule").not().isEmpty().withMessage("Working schedule is required."),
 
+    // // Optional fields
+    check("emergency_contact_relationship").optional({ values: 'falsy' }).isString().withMessage("Emergency contact relationship must be a valid string."),
+    check("emergency_contact_name").optional({ values: 'falsy' }).isString().withMessage("Emergency contact name must be a valid string."),
+    check("emergency_contact")
+        .optional({ values: 'falsy' })
+        .isLength({ min: 10, max: 10 }).withMessage("Emergency contact number must be exactly 10 digits.")
+        .bail()
+        .isNumeric().withMessage("Emergency contact number must contain only numeric digits."),
+    check("bank_name").optional({ values: 'falsy' }).isString().withMessage("Bank name must be a valid string."),
+    check("account_number").optional({ values: 'falsy' }).isNumeric().withMessage("Account number must be numeric."),
+    check("ifsc").optional({ values: 'falsy' }).isString().withMessage("IFSC code must be a valid string."),
+    check("increment_date").optional({ values: 'falsy' }).isISO8601().withMessage("Invalid date format. Use YYYY-MM-DD."),
+    check("skype_email").optional({ values: 'falsy' }).isEmail().withMessage("Invalid Skype email format."),
+    check("ultivic_email").optional({ values: 'falsy' }).isEmail().withMessage("Invalid Ultivic email format."),
+    body("ultivic_email").optional({ values: 'falsy' }).custom(async (value) => {
+        if (!value) return;
+        const [existing] = await sequelize.query(
+            'SELECT id FROM users WHERE ultivic_email = ?',
+            { replacements: [value], type: sequelize.QueryTypes.SELECT }
+        );
+        if (existing) throw new Error('Ultivic email already exists.');
+    }),
+    check("salary").optional({ values: 'falsy' }).isNumeric().withMessage("Salary must be numeric."),
+    check("security").optional({ values: 'falsy' }).isNumeric().withMessage("Security must be numeric."),
+    check("total_security").optional({ values: 'falsy' }).isNumeric().withMessage("Total security must be numeric."),
+    check("installments").optional({ values: 'falsy' }).isNumeric().withMessage("Installments must be numeric."),
 
     (req, res, next) => {
         const errors = validationResult(req);

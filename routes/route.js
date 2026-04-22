@@ -12,6 +12,7 @@ const leaveController = require("../controllers/leaveController")
 const finalRoundsController = require("../controllers/finalRoundsController")
 const dashboardController = require("../controllers/dashboardControllers")
 const interviewLeadsController = require('../controllers/interviewLeads')
+const masterOptionsController = require('../controllers/masterOptionsController')
 const authenticateToken = require("../middleware/authenticaionMiddleware")
 const {
     createUserValidator,
@@ -230,6 +231,10 @@ router.put("/shift-task",authenticateToken,dashboardController.shift_task)
 router.get('/get-notifications',authenticateToken,dashboardController.get_notifications)
 router.put('/mark-notifications-as-read',authenticateToken,dashboardController.mark_notifications_as_read)
 router.get('/get-employee-monthly-leave-report',authenticateToken,dashboardController.get_employee_monthly_leave_report)
+
+
+//master options
+router.get('/get-master-options', authenticateToken, masterOptionsController.get_master_options)
 
 
 module.exports = router

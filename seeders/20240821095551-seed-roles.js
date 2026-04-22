@@ -5,10 +5,10 @@ const { Role } = require('../models');
 module.exports = {
     up: async (queryInterface, Sequelize) => {
         const roles = [
-            { role: 'admin', createdAt: new Date(), updatedAt: new Date() },
-            { role: 'manager', createdAt: new Date(), updatedAt: new Date() },
-            { role: 'employee', createdAt: new Date(), updatedAt: new Date() },
-            { role: 'hr', createdAt: new Date(), updatedAt: new Date() }
+            { role: 'Admin', createdAt: new Date(), updatedAt: new Date() },
+            { role: 'Employee', createdAt: new Date(), updatedAt: new Date() },
+            { role: 'HR', createdAt: new Date(), updatedAt: new Date() },
+            { role: 'Team Lead', createdAt: new Date(), updatedAt: new Date() },
         ];
 
         for (const role of roles) {
