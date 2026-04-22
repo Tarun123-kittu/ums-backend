@@ -28,16 +28,16 @@ const createUserValidator = [
     check("working_schedule","Working schedule is required").not().isEmpty(),
 
     // // Optional fields
-    check("emergency_contact_relationship").optional().not().isEmpty().withMessage("Emergency contact relationship is required."),
-    check("emergency_contact_name").optional().not().isEmpty().withMessage("Emergency contact name is required."),
-    check("emergency_contact").optional().not().isEmpty().isLength({ min: 10, max: 10 }).isNumeric().withMessage("Emergency contact number must be numeric and 10 digits."),
-    check("bank_name").optional().not().isEmpty().withMessage("Bank name is required."),
-    check("account_number").optional().not().isEmpty().isNumeric().withMessage("Account number must be numeric."),
-    check("ifsc").optional().not().isEmpty().withMessage("IFSC code is required."),
-    check("increment_date").optional().not().isEmpty().isISO8601().withMessage("Invalid date format. Use YYYY-MM-DD."),
-    check("skype_email").optional().not().isEmpty().isEmail().withMessage("Invalid Skype email format."),
-    check("ultivic_email").optional().not().isEmpty().isEmail().withMessage("Invalid Ultivic email format."),
-    body("ultivic_email").optional().custom(async (value) => {
+    check("emergency_contact_relationship").optional({ values: 'falsy' }).isString(),
+    check("emergency_contact_name").optional({ values: 'falsy' }).isString(),
+    check("emergency_contact").optional({ values: 'falsy' }).isLength({ min: 10, max: 10 }).isNumeric().withMessage("Emergency contact number must be numeric and 10 digits."),
+    check("bank_name").optional({ values: 'falsy' }).isString(),
+    check("account_number").optional({ values: 'falsy' }).isNumeric().withMessage("Account number must be numeric."),
+    check("ifsc").optional({ values: 'falsy' }).isString(),
+    check("increment_date").optional({ values: 'falsy' }).isISO8601().withMessage("Invalid date format. Use YYYY-MM-DD."),
+    check("skype_email").optional({ values: 'falsy' }).isEmail().withMessage("Invalid Skype email format."),
+    check("ultivic_email").optional({ values: 'falsy' }).isEmail().withMessage("Invalid Ultivic email format."),
+    body("ultivic_email").optional({ values: 'falsy' }).custom(async (value) => {
         if (!value) return;
         const [existing] = await sequelize.query(
             'SELECT id FROM users WHERE ultivic_email = ?',
@@ -45,10 +45,10 @@ const createUserValidator = [
         );
         if (existing) throw new Error('Ultivic email already exists.');
     }),
-    check("salary").optional().not().isEmpty().isNumeric().withMessage("Salary must be numeric."),
-    check("security").optional().not().isEmpty().isNumeric().withMessage("Security must be numeric."),
-    check("total_security").optional().not().isEmpty().isNumeric().withMessage("Total security must be numeric."),
-    check("installments").optional().not().isEmpty().isNumeric().withMessage("Installments must be numeric."),
+    check("salary").optional({ values: 'falsy' }).isNumeric().withMessage("Salary must be numeric."),
+    check("security").optional({ values: 'falsy' }).isNumeric().withMessage("Security must be numeric."),
+    check("total_security").optional({ values: 'falsy' }).isNumeric().withMessage("Total security must be numeric."),
+    check("installments").optional({ values: 'falsy' }).isNumeric().withMessage("Installments must be numeric."),
 
     (req, res, next) => {
         const errors = validationResult(req);
@@ -80,8 +80,8 @@ const updateUserValidator = [
     check("department", "Department is required.").not().isEmpty(),
     check("status", "Status is required.").not().isEmpty(),
     check("address", "Address is required.").not().isEmpty(),
-    check("ultivic_email").optional().not().isEmpty().isEmail().withMessage("Invalid Ultivic email format."),
-    body("ultivic_email").optional().custom(async (value, { req }) => {
+    check("ultivic_email").optional({ values: 'falsy' }).isEmail().withMessage("Invalid Ultivic email format."),
+    body("ultivic_email").optional({ values: 'falsy' }).custom(async (value, { req }) => {
         if (!value) return;
         const [existing] = await sequelize.query(
             'SELECT id FROM users WHERE ultivic_email = ? AND id != ?',
