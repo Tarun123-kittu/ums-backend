@@ -1,11 +1,19 @@
 const { check, validationResult, body } = require('express-validator')
 const { errorResponse, successResponse } = require('../utils/responseHandler')
+const { sequelize } = require('../models')
 
 
 const createUserValidator = [
     // Required fields
     check("name", "Name is required.").not().isEmpty(),
     check("username", "Username is required.").not().isEmpty(),
+    body("username").custom(async (value) => {
+        const [existing] = await sequelize.query(
+            'SELECT id FROM users WHERE username = ? AND is_disabled = false',
+            { replacements: [value], type: sequelize.QueryTypes.SELECT }
+        );
+        if (existing) throw new Error('Username already exists.');
+    }),
     check("email", "Email is required.").not().isEmpty().isEmail().withMessage("Please enter a correct email format."),
     check("mobile", "Mobile number is required.").not().isEmpty().isLength({ min: 10, max: 10 }).isNumeric().withMessage("Mobile number must be numeric and 10 digits."),
     check("gender", "Gender is required.").not().isEmpty(),
@@ -20,19 +28,27 @@ const createUserValidator = [
     check("working_schedule","Working schedule is required").not().isEmpty(),
 
     // // Optional fields
-    // check("emergency_contact_relationship").optional().not().isEmpty().withMessage("Emergency contact relationship is required."),
-    // check("emergency_contact_name").optional().not().isEmpty().withMessage("Emergency contact name is required."),
-    // check("emergency_contact").optional().not().isEmpty().isLength({ min: 10, max: 10 }).isNumeric().withMessage("Emergency contact number must be numeric and 10 digits."),
-    // check("bank_name").optional().not().isEmpty().withMessage("Bank name is required."),
-    // check("account_number").optional().not().isEmpty().isNumeric().withMessage("Account number must be numeric."),
-    // check("ifsc").optional().not().isEmpty().withMessage("IFSC code is required."),
-    // check("increment_date").optional().not().isEmpty().isISO8601().withMessage("Invalid date format. Use YYYY-MM-DD."),
-    // check("skype_email").optional().not().isEmpty().isEmail().withMessage("Invalid Skype email format."),
-    // check("ultivic_email").optional().not().isEmpty().isEmail().withMessage("Invalid Ultivic email format."),
-    // check("salary").optional().not().isEmpty().isNumeric().withMessage("Salary must be numeric."),
-    // check("security").optional().not().isEmpty().isNumeric().withMessage("Security must be numeric."),
-    // check("total_security").optional().not().isEmpty().isNumeric().withMessage("Total security must be numeric."),
-    // check("installments").optional().not().isEmpty().isNumeric().withMessage("Installments must be numeric."),
+    check("emergency_contact_relationship").optional().not().isEmpty().withMessage("Emergency contact relationship is required."),
+    check("emergency_contact_name").optional().not().isEmpty().withMessage("Emergency contact name is required."),
+    check("emergency_contact").optional().not().isEmpty().isLength({ min: 10, max: 10 }).isNumeric().withMessage("Emergency contact number must be numeric and 10 digits."),
+    check("bank_name").optional().not().isEmpty().withMessage("Bank name is required."),
+    check("account_number").optional().not().isEmpty().isNumeric().withMessage("Account number must be numeric."),
+    check("ifsc").optional().not().isEmpty().withMessage("IFSC code is required."),
+    check("increment_date").optional().not().isEmpty().isISO8601().withMessage("Invalid date format. Use YYYY-MM-DD."),
+    check("skype_email").optional().not().isEmpty().isEmail().withMessage("Invalid Skype email format."),
+    check("ultivic_email").optional().not().isEmpty().isEmail().withMessage("Invalid Ultivic email format."),
+    body("ultivic_email").optional().custom(async (value) => {
+        if (!value) return;
+        const [existing] = await sequelize.query(
+            'SELECT id FROM users WHERE ultivic_email = ?',
+            { replacements: [value], type: sequelize.QueryTypes.SELECT }
+        );
+        if (existing) throw new Error('Ultivic email already exists.');
+    }),
+    check("salary").optional().not().isEmpty().isNumeric().withMessage("Salary must be numeric."),
+    check("security").optional().not().isEmpty().isNumeric().withMessage("Security must be numeric."),
+    check("total_security").optional().not().isEmpty().isNumeric().withMessage("Total security must be numeric."),
+    check("installments").optional().not().isEmpty().isNumeric().withMessage("Installments must be numeric."),
 
     (req, res, next) => {
         const errors = validationResult(req);
@@ -48,6 +64,13 @@ const createUserValidator = [
 const updateUserValidator = [
     check("name", "Name is required.").not().isEmpty(),
     check("username", "Username is required.").not().isEmpty(),
+    body("username").custom(async (value, { req }) => {
+        const [existing] = await sequelize.query(
+            'SELECT id FROM users WHERE username = ? AND id != ? AND is_disabled = false',
+            { replacements: [value, req.body.id], type: sequelize.QueryTypes.SELECT }
+        );
+        if (existing) throw new Error('Username already exists.');
+    }),
     check("email", "Email is required.").not().isEmpty().isEmail().withMessage("Please enter a correct email format."),
     check("mobile", "Mobile number is required.").not().isEmpty().isLength({ min: 10, max: 10 }).isNumeric().withMessage("Mobile number must be numeric and 10 digits."),
     check("gender", "Gender is required.").not().isEmpty(),
@@ -57,6 +80,15 @@ const updateUserValidator = [
     check("department", "Department is required.").not().isEmpty(),
     check("status", "Status is required.").not().isEmpty(),
     check("address", "Address is required.").not().isEmpty(),
+    check("ultivic_email").optional().not().isEmpty().isEmail().withMessage("Invalid Ultivic email format."),
+    body("ultivic_email").optional().custom(async (value, { req }) => {
+        if (!value) return;
+        const [existing] = await sequelize.query(
+            'SELECT id FROM users WHERE ultivic_email = ? AND id != ?',
+            { replacements: [value, req.body.id], type: sequelize.QueryTypes.SELECT }
+        );
+        if (existing) throw new Error('Ultivic email already exists.');
+    }),
 
     (req, res, next) => {
         const errors = validationResult(req);

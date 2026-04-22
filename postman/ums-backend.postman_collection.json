@@ -1,0 +1,612 @@
+{
+  "info": {
+    "name": "UMS Backend API",
+    "description": "Postman collection generated from routes/route.js and nearby validation/controller inputs. Set collection variables before running authenticated requests.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8000" },
+    { "key": "authToken", "value": "" },
+    { "key": "resetToken", "value": "sample-reset-token" },
+    { "key": "employeeId", "value": "1" },
+    { "key": "roleId", "value": "1" },
+    { "key": "languageId", "value": "1" },
+    { "key": "seriesId", "value": "1" },
+    { "key": "leadId", "value": "1" },
+    { "key": "attendanceId", "value": "1" },
+    { "key": "leaveId", "value": "1" },
+    { "key": "interviewId", "value": "1" },
+    { "key": "questionId", "value": "1" },
+    { "key": "notificationId", "value": "1" }
+  ],
+  "item": [
+    {
+      "name": "User Auth",
+      "item": [
+        {
+          "name": "Create User",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"username\": \"john.doe\",\n  \"email\": \"john@example.com\",\n  \"mobile\": \"9876543210\",\n  \"gender\": \"male\",\n  \"dob\": \"1995-01-15\",\n  \"doj\": \"2026-04-22\",\n  \"position\": \"Software Engineer\",\n  \"department\": \"Engineering\",\n  \"status\": \"active\",\n  \"password\": \"Password@123\",\n  \"confirm_password\": \"Password@123\",\n  \"address\": \"123 Main Street\",\n  \"role\": \"Employee\",\n  \"working_schedule\": \"General\",\n  \"emergency_contact_relationship\": \"Father\",\n  \"emergency_contact_name\": \"James Doe\",\n  \"emergency_contact\": \"9876500000\",\n  \"bank_name\": \"State Bank of India\",\n  \"account_number\": \"1234567890\",\n  \"ifsc\": \"SBIN0001234\",\n  \"increment_date\": \"2027-01-01\",\n  \"skype_email\": \"john.doe@skype.com\",\n  \"ultivic_email\": \"john.doe@ultivic.com\",\n  \"salary\": 50000,\n  \"security\": 5000,\n  \"total_security\": 10000,\n  \"installments\": 2,\n  \"documents\": [\"aadhar_card\", \"pan_card\"]\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/create-user"
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var responseBody = pm.response.json();",
+                  "if(responseBody.type != \"error\"){",
+                  "  pm.environment.set(\"authToken\", responseBody.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"Password@123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/login"
+          }
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@example.com\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/forgot-password"
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"password\": \"NewPassword@123\",\n  \"confirm_password\": \"NewPassword@123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/reset-password/{{resetToken}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["reset-password", "{{resetToken}}"]
+            }
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"password\": \"Password@123\",\n  \"newPassword\": \"NewPassword@123\",\n  \"confirmPassword\": \"NewPassword@123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/change-password"
+          }
+        },
+        {
+          "name": "Get Employee Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }
+            ],
+            "url": "{{baseUrl}}/get-employee-details"
+          }
+        },
+        {
+          "name": "Get Employees",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/get-employees?page=1&limit=10&name=&status=",
+              "host": ["{{baseUrl}}"],
+              "path": ["get-employees"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" },
+                { "key": "name", "value": "", "description": "Filter by employee name (partial match)" },
+                { "key": "status", "value": "", "description": "Filter by status (e.g. active)" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Employee",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/delete-employee/{{employeeId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["delete-employee", "{{employeeId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": {{employeeId}},\n  \"name\": \"John Doe\",\n  \"username\": \"john.doe\",\n  \"email\": \"john@example.com\",\n  \"mobile\": \"9876543210\",\n  \"gender\": \"male\",\n  \"dob\": \"1995-01-15\",\n  \"doj\": \"2026-04-22\",\n  \"working_schedule\": \"General\",\n  \"position\": \"Senior Software Engineer\",\n  \"department\": \"Engineering\",\n  \"status\": \"active\",\n  \"address\": \"123 Main Street\",\n  \"emergency_contact_relationship\": \"Father\",\n  \"emergency_contact_name\": \"James Doe\",\n  \"emergency_contact\": \"9876500000\",\n  \"bank_name\": \"State Bank of India\",\n  \"account_number\": \"1234567890\",\n  \"ifsc\": \"SBIN0001234\",\n  \"increment_date\": \"2027-01-01\",\n  \"skype_email\": \"john.doe@skype.com\",\n  \"ultivic_email\": \"john.doe@ultivic.com\",\n  \"salary\": 50000,\n  \"security\": 5000,\n  \"total_security\": 10000,\n  \"installments\": 2,\n  \"documents\": [\"aadhar_card\", \"pan_card\"]\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/update-user"
+          }
+        },
+        {
+          "name": "Get All Username",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }
+            ],
+            "url": "{{baseUrl}}/get-all-username"
+          }
+        },
+        {
+          "name": "Get User Documents",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/get-user-documents?user_id={{employeeId}}&doc_type=aadhar",
+              "host": ["{{baseUrl}}"],
+              "path": ["get-user-documents"],
+              "query": [
+                { "key": "user_id", "value": "{{employeeId}}" },
+                { "key": "doc_type", "value": "aadhar" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Roles And Permissions",
+      "item": [
+        { "name": "Get User Permissions", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": "{{baseUrl}}/get-user-permissions" } },
+        { "name": "Get Roles And Users", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": "{{baseUrl}}/get-roles-and-users" } },
+        {
+          "name": "Assign Role",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" }],
+            "body": { "mode": "raw", "raw": "[\n  {\n    \"user_id\": 1,\n    \"role_id\": 1\n  }\n]", "options": { "raw": { "language": "json" } } },
+            "url": "{{baseUrl}}/assign-role"
+          }
+        },
+        {
+          "name": "Assign New Permissions To Roles",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"permission_data\": [\n    {\n      \"role_id\": 1,\n      \"permission_id\": 1,\n      \"can_view\": true,\n      \"can_create\": true,\n      \"can_update\": true,\n      \"can_delete\": false\n    }\n  ],\n  \"user_id\": [1]\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/assign-new-permissions-to-roles"
+          }
+        },
+        {
+          "name": "Update Permissions Assigned To Role",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"permission_data\": [\n    {\n      \"role_id\": 1,\n      \"permission_id\": 1,\n      \"can_view\": true,\n      \"can_create\": true,\n      \"can_update\": false,\n      \"can_delete\": false\n    }\n  ]\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/update-permissions-assigned-to-role"
+          }
+        },
+        {
+          "name": "Delete Role",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" }],
+            "body": { "mode": "raw", "raw": "{\n  \"role_id\": 1\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{baseUrl}}/delete-role"
+          }
+        },
+        {
+          "name": "Delete User Role",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }],
+            "url": {
+              "raw": "{{baseUrl}}/delete-user-role?roleId={{roleId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["delete-user-role"],
+              "query": [{ "key": "roleId", "value": "{{roleId}}" }]
+            }
+          }
+        },
+        { "name": "Get Roles Permissions", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": "{{baseUrl}}/get-roles-permissions" } },
+        { "name": "Get Role Assigned To Users", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": "{{baseUrl}}/get-role-assigned-to-users" } },
+        { "name": "Get All Roles", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": "{{baseUrl}}/get-all-roles" } },
+        { "name": "Get Permissions", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": "{{baseUrl}}/get-permissions" } }
+      ]
+    },
+    {
+      "name": "Holidays And Events",
+      "item": [
+        {
+          "name": "Add Holiday Or Event",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" }],
+            "body": { "mode": "raw", "raw": "{\n  \"occasion_name\": \"Republic Day\",\n  \"occasion_type\": \"holiday\",\n  \"date\": \"2026-01-26\",\n  \"occasion_description\": \"National holiday to celebrate republic day\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{baseUrl}}/add-holiday-or-event"
+          }
+        },
+        {
+          "name": "Update Holiday Or Event",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" }],
+            "body": { "mode": "raw", "raw": "{\n  \"occasion_name\": \"Republic Day\",\n  \"occasion_type\": \"holiday\",\n  \"date\": \"2026-01-26\",\n  \"occasion_description\": \"National holiday to celebrate republic day\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": { "raw": "{{baseUrl}}/update-holiday-or-event?holidayOrEventId=1", "host": ["{{baseUrl}}"], "path": ["update-holiday-or-event"], "query": [{ "key": "holidayOrEventId", "value": "1" }] }
+          }
+        },
+        { "name": "Get All Holidays Or Events", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": { "raw": "{{baseUrl}}/get-all-holidays-or-events?year=2026&page=1&limit=10", "host": ["{{baseUrl}}"], "path": ["get-all-holidays-or-events"], "query": [{ "key": "year", "value": "2026" }, { "key": "page", "value": "1" }, { "key": "limit", "value": "10" }] } } },
+        {
+          "name": "Delete Holiday Or Event",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }],
+            "url": { "raw": "{{baseUrl}}/delete-holiday-or-event?holidayEventId=1", "host": ["{{baseUrl}}"], "path": ["delete-holiday-or-event"], "query": [{ "key": "holidayEventId", "value": "1" }] }
+          }
+        },
+        {
+          "name": "Get Holiday And Event",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }],
+            "url": { "raw": "{{baseUrl}}/get-holiday-and-event?id=1", "host": ["{{baseUrl}}"], "path": ["get-holiday-and-event"], "query": [{ "key": "id", "value": "1" }] }
+          }
+        },
+        { "name": "Get Events And Birthdays", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": "{{baseUrl}}/get-events-and-birthdays" } },
+        { "name": "Get Current And Next Month Events", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": "{{baseUrl}}/get-current-and-next-month-events" } }
+      ]
+    },
+    {
+      "name": "Attendance",
+      "item": [
+        {
+          "name": "Mark Attendance",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" }],
+            "body": { "mode": "raw", "raw": "{\n  \"login_device\": \"web\",\n  \"login_mobile\": \"9876543210\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{baseUrl}}/mark-attendance"
+          }
+        },
+        {
+          "name": "Unmark Attendance",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" }],
+            "body": { "mode": "raw", "raw": "{\n  \"report\": \"Completed daily assigned tasks\",\n  \"attendance_id\": {{attendanceId}},\n  \"logout_device\": \"web\",\n  \"logout_mobile\": \"9876543210\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{baseUrl}}/unmark-attendance"
+          }
+        },
+        {
+          "name": "Get Attendance Details",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }],
+            "url": { "raw": "{{baseUrl}}/get-attendance-details?attendanceId={{attendanceId}}", "host": ["{{baseUrl}}"], "path": ["get-attendance-details"], "query": [{ "key": "attendanceId", "value": "{{attendanceId}}" }] }
+          }
+        },
+        {
+          "name": "Update Attendance Details",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" }],
+            "body": { "mode": "raw", "raw": "{\n  \"attendanceId\": {{attendanceId}},\n  \"in_time\": \"09:15:00\",\n  \"out_time\": \"18:30:00\",\n  \"status\": \"present\",\n  \"total_time\": \"09:15\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{baseUrl}}/update-attendance-details"
+          }
+        },
+        {
+          "name": "Get Attendances",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }],
+            "url": { "raw": "{{baseUrl}}/get-attendances?user_id={{employeeId}}&month=4&year=2026&page=1&limit=10", "host": ["{{baseUrl}}"], "path": ["get-attendances"], "query": [{ "key": "user_id", "value": "{{employeeId}}" }, { "key": "month", "value": "4" }, { "key": "year", "value": "2026" }, { "key": "page", "value": "1" }, { "key": "limit", "value": "10" }] }
+          }
+        },
+        { "name": "Get Attendances Report", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": { "raw": "{{baseUrl}}/get-attendances-report?month=4&year=2026&name=&page=1&limit=10", "host": ["{{baseUrl}}"], "path": ["get-attendances-report"], "query": [{ "key": "month", "value": "4" }, { "key": "year", "value": "2026" }, { "key": "name", "value": "", "description": "Filter by employee name" }, { "key": "page", "value": "1" }, { "key": "limit", "value": "10" }] } } },
+        {
+          "name": "Mark Break",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" }],
+            "body": { "mode": "raw", "raw": "{\n  \"attendance_id\": {{attendanceId}},\n  \"break_start_time\": \"13:00:00\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{baseUrl}}/mark-break"
+          }
+        },
+        {
+          "name": "Unmark Break",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" }],
+            "body": { "mode": "raw", "raw": "{\n  \"break_id\": 1,\n  \"break_end_time\": \"13:30:00\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{baseUrl}}/unmark-break"
+          }
+        },
+        {
+          "name": "Get User Monthly Report",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }],
+            "url": { "raw": "{{baseUrl}}/get-user-monthly-report?month=4&year=2026&user_id={{employeeId}}", "host": ["{{baseUrl}}"], "path": ["get-user-monthly-report"], "query": [{ "key": "month", "value": "4" }, { "key": "year", "value": "2026" }, { "key": "user_id", "value": "{{employeeId}}" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Leave",
+      "item": [
+        {
+          "name": "Apply Leave",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" }],
+            "body": { "mode": "raw", "raw": "{\n  \"from_date\": \"2026-04-24\",\n  \"to_date\": \"2026-04-25\",\n  \"type\": \"CASUAL LEAVE\",\n  \"description\": \"Personal work\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{baseUrl}}/apply-leave"
+          }
+        },
+        { "name": "Get Applied Leaves", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": { "raw": "{{baseUrl}}/get-applied-leaves?page=1&limit=10", "host": ["{{baseUrl}}"], "path": ["get-applied-leaves"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "10" }] } } },
+        { "name": "Get User Pending Leaves", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": { "raw": "{{baseUrl}}/get-user-pending-leaves?user_id={{employeeId}}", "host": ["{{baseUrl}}"], "path": ["get-user-pending-leaves"], "query": [{ "key": "user_id", "value": "{{employeeId}}" }] } } },
+        {
+          "name": "Update Pending Leaves",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" }],
+            "body": { "mode": "raw", "raw": "{\n  \"leave_id\": {{leaveId}},\n  \"status\": \"ACCEPTED\",\n  \"remark\": \"Approved by manager\",\n  \"user_id\": {{employeeId}},\n  \"leave_count\": 1,\n  \"email\": \"john@example.com\",\n  \"name\": \"John Doe\",\n  \"from_date\": \"2026-04-24\",\n  \"to_date\": \"2026-04-25\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{baseUrl}}/update-pending-leaves"
+          }
+        },
+        { "name": "All User Applied Leaves", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": { "raw": "{{baseUrl}}/all-user-applied-leaves?name={{employeeId}}&month=4&year=2026&page=1&limit=10", "host": ["{{baseUrl}}"], "path": ["all-user-applied-leaves"], "query": [{ "key": "name", "value": "{{employeeId}}", "description": "user_id filter" }, { "key": "month", "value": "4" }, { "key": "year", "value": "2026" }, { "key": "page", "value": "1" }, { "key": "limit", "value": "10" }] } } },
+        { "name": "Get Applied Leave Detail", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": { "raw": "{{baseUrl}}/get-applied-leave-detail?leave_id={{leaveId}}", "host": ["{{baseUrl}}"], "path": ["get-applied-leave-detail"], "query": [{ "key": "leave_id", "value": "{{leaveId}}" }] } } },
+        { "name": "All Users Pending Leaves", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": "{{baseUrl}}/all-users-pending-leaves" } },
+        { "name": "Leave Bank Report", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": { "raw": "{{baseUrl}}/leave-bank-report?month=4&year=2026&session=2026-2027&page=1&limit=10", "host": ["{{baseUrl}}"], "path": ["leave-bank-report"], "query": [{ "key": "month", "value": "4" }, { "key": "year", "value": "2026" }, { "key": "session", "value": "2026-2027" }, { "key": "page", "value": "1" }, { "key": "limit", "value": "10" }] } } },
+        { "name": "User Applied Leaves", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": { "raw": "{{baseUrl}}/user-applied-leaves?month=4&year=2026", "host": ["{{baseUrl}}"], "path": ["user-applied-leaves"], "query": [{ "key": "month", "value": "4" }, { "key": "year", "value": "2026" }] } } },
+        {
+          "name": "Update User Leave Bank",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" }],
+            "url": { "raw": "{{baseUrl}}/update-user-leave-bank?employeeId={{employeeId}}&paid_leaves=10&taken_leaves=2&session=2026-2027", "host": ["{{baseUrl}}"], "path": ["update-user-leave-bank"], "query": [{ "key": "employeeId", "value": "{{employeeId}}" }, { "key": "paid_leaves", "value": "10" }, { "key": "taken_leaves", "value": "2" }, { "key": "session", "value": "2026-2027" }] }
+          }
+        },
+        {
+          "name": "Change Leave Status",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" }],
+            "body": { "mode": "raw", "raw": "{\n  \"leaveId\": {{leaveId}}\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{baseUrl}}/change-leave-status"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Interview Leads",
+      "item": [
+        {
+          "name": "Create Lead",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Jane Candidate\",\n  \"phone_number\": \"9876543210\",\n  \"email\": \"jane.candidate@example.com\",\n  \"gender\": \"female\",\n  \"dob\": \"1998-03-12\",\n  \"profile\": \"Node.js Developer\",\n  \"state\": \"Gujarat\",\n  \"house_address\": \"Ahmedabad\",\n  \"experience\": \"3 years\",\n  \"current_salary\": \"500000\",\n  \"expected_salary\": \"700000\",\n  \"last_company\": \"Acme Corp\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{baseUrl}}/create-lead"
+          }
+        },
+        { "name": "Get Lead", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": { "raw": "{{baseUrl}}/get-lead?leadId={{leadId}}", "host": ["{{baseUrl}}"], "path": ["get-lead"], "query": [{ "key": "leadId", "value": "{{leadId}}" }] } } },
+        {
+          "name": "Update Lead",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Jane Candidate\",\n  \"phone_number\": \"9876543210\",\n  \"email\": \"jane.candidate@example.com\",\n  \"gender\": \"female\",\n  \"dob\": \"1998-03-12\",\n  \"experience\": \"4 years\",\n  \"current_salary\": \"600000\",\n  \"expected_salary\": \"800000\",\n  \"profile\": \"Senior Node.js Developer\",\n  \"last_company\": \"Acme Corp\",\n  \"state\": \"Gujarat\",\n  \"house_address\": \"Ahmedabad\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": { "raw": "{{baseUrl}}/update-lead?leadId={{leadId}}", "host": ["{{baseUrl}}"], "path": ["update-lead"], "query": [{ "key": "leadId", "value": "{{leadId}}" }] }
+          }
+        },
+        { "name": "Get All Leads", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": { "raw": "{{baseUrl}}/get-all-leads?page=1&limit=10", "host": ["{{baseUrl}}"], "path": ["get-all-leads"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "10" }] } } },
+        { "name": "Delete Lead", "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": { "raw": "{{baseUrl}}/delete-lead?leadId={{leadId}}", "host": ["{{baseUrl}}"], "path": ["delete-lead"], "query": [{ "key": "leadId", "value": "{{leadId}}" }] } } },
+        { "name": "Get Face To Face Round Leads", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": { "raw": "{{baseUrl}}/get-face-to-face-round-leads?page=1&limit=10", "host": ["{{baseUrl}}"], "path": ["get-face-to-face-round-leads"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "10" }] } } },
+        { "name": "Get Final Round Leads", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": "{{baseUrl}}/get-final-round-leads" } },
+        {
+          "name": "Delete Lead Records",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" }],
+            "body": { "mode": "raw", "raw": "{\n  \"lead_ids\": [1, 2]\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{baseUrl}}/delete-lead-records"
+          }
+        }
+      ]
+    },
+    {
+      "name": "HR Round",
+      "item": [
+        { "name": "Get HR Round Questions", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": "{{baseUrl}}/get-hr-round-questions" } },
+        {
+          "name": "HR Round",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" }],
+            "body": { "mode": "raw", "raw": "{\n  \"lead_id\": {{leadId}},\n  \"responses\": [\n    {\n      \"questionid\": 1,\n      \"answer\": \"I enjoy solving production issues.\"\n    }\n  ]\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{baseUrl}}/hr-round"
+          }
+        },
+        {
+          "name": "HR Round Result",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" }],
+            "body": { "mode": "raw", "raw": "{\n  \"interview_id\": {{interviewId}},\n  \"hr_round_result\": \"selected\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{baseUrl}}/hr-round-result"
+          }
+        },
+        {
+          "name": "Update Lead Response",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" }],
+            "body": { "mode": "raw", "raw": "{\n  \"id\": 1,\n  \"answer\": \"Updated answer\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{baseUrl}}/update-lead-response"
+          }
+        },
+        { "name": "Get HR Assign Questions To Lead", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": { "raw": "{{baseUrl}}/get-hr-assign-questions-to-lead?count=10", "host": ["{{baseUrl}}"], "path": ["get-hr-assign-questions-to-lead"], "query": [{ "key": "count", "value": "10" }] } } },
+        { "name": "Get HR Round Candidate", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": { "raw": "{{baseUrl}}/get-hr-round-candidate?pageNumber=1&pageSize=10&profile=&experience=&result_status=pending", "host": ["{{baseUrl}}"], "path": ["get-hr-round-candidate"], "query": [{ "key": "pageNumber", "value": "1" }, { "key": "pageSize", "value": "10" }, { "key": "profile", "value": "", "description": "Filter by language/profile" }, { "key": "experience", "value": "", "description": "Filter by years of experience" }, { "key": "result_status", "value": "pending", "description": "selected | rejected | pending | on hold" }] } } },
+        { "name": "Get HR Round Assign Questions To Lead", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": "{{baseUrl}}/get-hr-round-assign-questions-to-lead" } },
+        {
+          "name": "Update Key Point",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" }],
+            "body": { "mode": "raw", "raw": "{\n  \"question_id\": {{questionId}},\n  \"lead_id\": {{leadId}},\n  \"interview_id\": {{interviewId}},\n  \"key_point\": \"Strong communication skills\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{baseUrl}}/update-key-point"
+          }
+        },
+        {
+          "name": "Send Test Link",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }],
+            "url": { "raw": "{{baseUrl}}/send-test-link?lead_id={{leadId}}&test_series={{seriesId}}", "host": ["{{baseUrl}}"], "path": ["send-test-link"], "query": [{ "key": "lead_id", "value": "{{leadId}}" }, { "key": "test_series", "value": "{{seriesId}}" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Languages",
+      "item": [
+        { "name": "Create Language", "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" }], "body": { "mode": "raw", "raw": "{\n  \"language\": \"JavaScript\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/create-language" } },
+        { "name": "Get All Languages", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": "{{baseUrl}}/get-all-languages" } },
+        { "name": "Get Language", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": { "raw": "{{baseUrl}}/get-language?languageId={{languageId}}", "host": ["{{baseUrl}}"], "path": ["get-language"], "query": [{ "key": "languageId", "value": "{{languageId}}" }] } } },
+        { "name": "Update Language", "request": { "method": "PUT", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" }], "body": { "mode": "raw", "raw": "{\n  \"languageId\": {{languageId}},\n  \"language\": \"TypeScript\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/update-language" } },
+        { "name": "Delete Language", "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": { "raw": "{{baseUrl}}/delete-language?languageId={{languageId}}", "host": ["{{baseUrl}}"], "path": ["delete-language"], "query": [{ "key": "languageId", "value": "{{languageId}}" }] } } }
+      ]
+    },
+    {
+      "name": "Test Series",
+      "item": [
+        { "name": "Create Series", "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" }], "body": { "mode": "raw", "raw": "{\n  \"language_id\": {{languageId}},\n  \"series_name\": \"JavaScript Fundamentals\",\n  \"time_taken\": 60,\n  \"description\": \"Core JavaScript assessment\",\n  \"experience_level\": \"mid\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/create-series" } },
+        { "name": "Get All Series", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": "{{baseUrl}}/get-all-series" } },
+        { "name": "Get Series", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": { "raw": "{{baseUrl}}/get-series?seriesId={{seriesId}}", "host": ["{{baseUrl}}"], "path": ["get-series"], "query": [{ "key": "seriesId", "value": "{{seriesId}}" }] } } },
+        { "name": "Update Series", "request": { "method": "PUT", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" }], "body": { "mode": "raw", "raw": "{\n  \"seriesId\": {{seriesId}},\n  \"series_name\": \"Advanced JavaScript\",\n  \"language_id\": {{languageId}},\n  \"time_taken\": 90,\n  \"description\": \"Advanced JS topics\",\n  \"experience_level\": \"senior\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/update-series" } },
+        { "name": "Delete Series", "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": { "raw": "{{baseUrl}}/delete-series?seriesId={{seriesId}}", "host": ["{{baseUrl}}"], "path": ["delete-series"], "query": [{ "key": "seriesId", "value": "{{seriesId}}" }] } } },
+        { "name": "Get Language Test Series", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": { "raw": "{{baseUrl}}/get-language-test-series?language_id={{languageId}}", "host": ["{{baseUrl}}"], "path": ["get-language-test-series"], "query": [{ "key": "language_id", "value": "{{languageId}}" }] } } }
+      ]
+    },
+    {
+      "name": "Technical Round Questions",
+      "item": [
+        { "name": "Add Objective", "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" }], "body": { "mode": "raw", "raw": "{\n  \"test_series_id\": {{seriesId}},\n  \"language_id\": {{languageId}},\n  \"question\": \"What is closure in JavaScript?\",\n  \"options\": [\"Function with lexical scope\", \"Loop type\", \"DOM method\", \"Array helper\"],\n  \"correct_option_number\": 1\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/add-objective" } },
+        { "name": "Add Subjective", "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" }], "body": { "mode": "raw", "raw": "{\n  \"test_series_id\": {{seriesId}},\n  \"language_id\": {{languageId}},\n  \"question\": \"Explain event loop.\",\n  \"answer\": \"The event loop coordinates the call stack and callback queue.\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/add-subjective" } },
+        { "name": "Add Logical", "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" }], "body": { "mode": "raw", "raw": "{\n  \"test_series_id\": {{seriesId}},\n  \"language_id\": {{languageId}},\n  \"question\": \"If 3 people take 3 days to finish a task, how many days will 1 person take?\",\n  \"answer\": \"9\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/add-logical" } },
+        { "name": "Get Questions Answers", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": { "raw": "{{baseUrl}}/get-questions-answers?language_id={{languageId}}&series_id={{seriesId}}", "host": ["{{baseUrl}}"], "path": ["get-questions-answers"], "query": [{ "key": "language_id", "value": "{{languageId}}" }, { "key": "series_id", "value": "{{seriesId}}" }] } } },
+        { "name": "Get Lead Questions", "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/get-lead-questions?lead_id={{leadId}}&series_id={{seriesId}}", "host": ["{{baseUrl}}"], "path": ["get-lead-questions"], "query": [{ "key": "lead_id", "value": "{{leadId}}" }, { "key": "series_id", "value": "{{seriesId}}" }] } } },
+        { "name": "Submit Technical Round", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json", "type": "text" }], "body": { "mode": "raw", "raw": "{\n  \"lead_id\": {{leadId}},\n  \"responses\": [\n    {\n      \"question_id\": 1,\n      \"answer\": \"Function with lexical scope\"\n    }\n  ],\n  \"submission_token\": \"sample-submission-token\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/submit-technical-round" } },
+        { "name": "Get Logical Subjective Questions", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": "{{baseUrl}}/get-logical-subjective-questions" } },
+        { "name": "Get Objective Questions", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": "{{baseUrl}}/get-objective-questions" } },
+        { "name": "Update Logical And Subjective Question", "request": { "method": "PUT", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" }], "body": { "mode": "raw", "raw": "{\n  \"question_id\": {{questionId}},\n  \"question\": \"Explain JavaScript event loop in detail.\",\n  \"answer\": \"Updated answer text\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/update-logical-and-subjective-question" } },
+        { "name": "Update Objective Question", "request": { "method": "PUT", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" }], "body": { "mode": "raw", "raw": "{\n  \"question_id\": {{questionId}},\n  \"question\": \"What is hoisting in JavaScript?\",\n  \"options\": [\"Memory phase behavior\", \"CSS layout\", \"HTTP verb\", \"Database join\"],\n  \"correct_option_number\": 1\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/update-objective-question" } },
+        { "name": "Delete Subjective", "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": { "raw": "{{baseUrl}}/delete-subjective?question_id={{questionId}}", "host": ["{{baseUrl}}"], "path": ["delete-subjective"], "query": [{ "key": "question_id", "value": "{{questionId}}" }] } } },
+        { "name": "Delete Objective", "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": { "raw": "{{baseUrl}}/delete-objective?question_id={{questionId}}", "host": ["{{baseUrl}}"], "path": ["delete-objective"], "query": [{ "key": "question_id", "value": "{{questionId}}" }] } } },
+        { "name": "All Technical Round Leads", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": { "raw": "{{baseUrl}}/all-technical-round-leads?page=1&limit=10&series_id={{seriesId}}", "host": ["{{baseUrl}}"], "path": ["all-technical-round-leads"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "10" }, { "key": "series_id", "value": "{{seriesId}}" }] } } },
+        { "name": "Update Status", "request": { "method": "PUT", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" }], "body": { "mode": "raw", "raw": "{\n  \"lead_id\": {{leadId}},\n  \"status\": \"submitted\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/update-status" } },
+        { "name": "Verify Lead", "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/verify-lead?lead_id={{leadId}}&token=sample-token", "host": ["{{baseUrl}}"], "path": ["verify-lead"], "query": [{ "key": "lead_id", "value": "{{leadId}}" }, { "key": "token", "value": "sample-token" }] } } },
+        { "name": "Start Test", "request": { "method": "PUT", "header": [{ "key": "Content-Type", "value": "application/json", "type": "text" }], "body": { "mode": "raw", "raw": "{\n  \"lead_id\": {{leadId}},\n  \"token\": \"sample-token\",\n  \"series_id\": {{seriesId}}\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/start-test" } },
+        { "name": "Technical Round Result", "request": { "method": "PUT", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" }], "body": { "mode": "raw", "raw": "{\n  \"interview_id\": {{interviewId}},\n  \"technical_round_result\": \"selected\",\n  \"developer_review\": \"Strong problem solving and clean code structure\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/technical-round-result" } },
+        { "name": "Get Lead Technical Response", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": { "raw": "{{baseUrl}}/get-lead-technical-response?interview_id={{interviewId}}&lead_id={{leadId}}", "host": ["{{baseUrl}}"], "path": ["get-lead-technical-response"], "query": [{ "key": "interview_id", "value": "{{interviewId}}" }, { "key": "lead_id", "value": "{{leadId}}" }] } } },
+        { "name": "Check Lead Answer", "request": { "method": "PUT", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" }], "body": { "mode": "raw", "raw": "{\n  \"interview_id\": {{interviewId}},\n  \"lead_id\": {{leadId}},\n  \"question_id\": {{questionId}},\n  \"answer_status\": \"correct\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/check-lead-answer" } },
+        { "name": "Get Tech Round Test Submit Status", "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/get-tech-round-test-submit-status?lead_id={{leadId}}&interview_id={{interviewId}}", "host": ["{{baseUrl}}"], "path": ["get-tech-round-test-submit-status"], "query": [{ "key": "lead_id", "value": "{{leadId}}" }, { "key": "interview_id", "value": "{{interviewId}}" }] } } }
+      ]
+    },
+    {
+      "name": "Final And Face To Face Round",
+      "item": [
+        { "name": "Final Or Face To Face Round", "request": { "method": "PUT", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" }], "body": { "mode": "raw", "raw": "{\n  \"leadId\": {{leadId}},\n  \"status\": \"selected\",\n  \"round_type\": \"final\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/final-or-face-to-face-round" } },
+        { "name": "Update In Round Count", "request": { "method": "PUT", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" }], "body": { "mode": "raw", "raw": "{\n  \"leadId\": {{leadId}},\n  \"in_round_count\": 3\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/update-in-round-count" } }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "item": [
+        { "name": "Get Dashboard Leaves", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": { "raw": "{{baseUrl}}/get-dashboard-leaves?month=4", "host": ["{{baseUrl}}"], "path": ["get-dashboard-leaves"], "query": [{ "key": "month", "value": "4" }] } } },
+        { "name": "Get Dashboard Interview Leads Overview", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": { "raw": "{{baseUrl}}/get-dashboard-interview-leads-overview?timePeriod=month", "host": ["{{baseUrl}}"], "path": ["get-dashboard-interview-leads-overview"], "query": [{ "key": "timePeriod", "value": "month" }] } } },
+        { "name": "Get Employees Working Time", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": "{{baseUrl}}/get-employees-working-time" } },
+        { "name": "Get User Today Attendance", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": "{{baseUrl}}/get-user-today-attendance" } },
+        { "name": "Get All Present Employee", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": "{{baseUrl}}/get-all-present-employee" } },
+        { "name": "Get All On Leave Employees", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": "{{baseUrl}}/get-all-on-leave-employees" } },
+        { "name": "Get All Interviews", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": "{{baseUrl}}/get-all-interviews" } }
+      ]
+    },
+    {
+      "name": "Employee Dashboard",
+      "item": [
+        { "name": "Get Employee Leaves Record", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": "{{baseUrl}}/get-employee-leaves-record" } },
+        { "name": "Get All Employees Accepted Leaves", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": "{{baseUrl}}/get-all-employees-accepted-leaves" } },
+        { "name": "Create Task", "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" }], "body": { "mode": "raw", "raw": "{\n  \"task_name\": \"Prepare monthly attendance report\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/create-task" } },
+        { "name": "Get Tasks", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": { "raw": "{{baseUrl}}/get-tasks?task_status=ACTIVE", "host": ["{{baseUrl}}"], "path": ["get-tasks"], "query": [{ "key": "task_status", "value": "ACTIVE", "description": "ACTIVE or COMPLETED" }] } } },
+        { "name": "Shift Task", "request": { "method": "PUT", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }, { "key": "Content-Type", "value": "application/json", "type": "text" }], "body": { "mode": "raw", "raw": "{\n  \"tasks_ids\": [1, 2],\n  \"task_status\": \"COMPLETED\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/shift-task" } },
+        { "name": "Get Notifications", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": "{{baseUrl}}/get-notifications" } },
+        { "name": "Mark Notifications As Read", "request": { "method": "PUT", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": "{{baseUrl}}/mark-notifications-as-read" } },
+        { "name": "Get Employee Monthly Leave Report", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }], "url": "{{baseUrl}}/get-employee-monthly-leave-report" } }
+      ]
+    }
+  ]
+}
