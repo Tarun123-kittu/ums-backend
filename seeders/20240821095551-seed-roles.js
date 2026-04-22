@@ -6,6 +6,9 @@ module.exports = {
     up: async (queryInterface, Sequelize) => {
         const roles = [
             { role: 'Admin', createdAt: new Date(), updatedAt: new Date() },
+            { role: 'Employee', createdAt: new Date(), updatedAt: new Date() },
+            { role: 'HR', createdAt: new Date(), updatedAt: new Date() },
+            { role: 'Team Lead', createdAt: new Date(), updatedAt: new Date() },
         ];
 
         for (const role of roles) {
