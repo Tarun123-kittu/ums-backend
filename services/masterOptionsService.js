@@ -1,5 +1,6 @@
 const MASTER_OPTIONS = {
     documents: [
+        { key: 'N/A', label: 'N/A' },
         { key: 'Photograph', label: 'Photograph' },
         { key: 'Adhar', label: 'Adhar' },
         { key: 'Pan', label: 'Pan' },
@@ -10,7 +11,8 @@ const MASTER_OPTIONS = {
         { key: 'Training', label: 'Training' },
         { key: 'Experience letter', label: 'Experience letter' },
     ],
-    positions: [
+    positions: [        
+        { key: 'N/A', label: 'N/A' },
         { key: 'Intern', label: 'Intern' },
         { key: 'Trainee', label: 'Trainee' },
         { key: 'Jr. Developer', label: 'Jr. Developer' },
@@ -21,6 +23,7 @@ const MASTER_OPTIONS = {
         { key: 'Tester', label: 'Tester' },
         { key: 'BDE', label: 'BDE' },
         { key: 'Team Lead', label: 'Team Lead' },
+        { key: 'Co-Founder/ Chief Executive Officer', label: 'Co-Founder/ Chief Executive Officer' },
     ],
     departments: [
         { key: 'N/A', label: 'N/A' },
@@ -30,16 +33,15 @@ const MASTER_OPTIONS = {
         { key: 'Management', label: 'Management' },
     ],
     statuses: [
-        { key: 'None', label: 'None' },
         { key: 'Terminated', label: 'Terminated' },
         { key: 'On Probation', label: 'On Probation' },
         { key: 'Confirmed', label: 'Confirmed' },
         { key: 'Resignation', label: 'Resignation' },
     ],
     genders: [
-        { key: 'MALE', label: 'Male' },
-        { key: 'FEMALE', label: 'Female' },
-        { key: 'OTHER', label: 'Other' },
+        { key: 'Male', label: 'Male' },
+        { key: 'Female', label: 'Female' },
+        { key: 'Other', label: 'Other' },
     ],
     working_schedules: [
         { key: 'Full Time', label: 'Full Time' },

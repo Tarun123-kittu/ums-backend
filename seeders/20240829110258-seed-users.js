@@ -24,12 +24,12 @@ const ADMIN_USER = {
     security: 10000,
     total_security: 50000,
     installments: 5,
-    position: 'Manager',
-    department: 'HR',
+    position: 'Co-Founder/ Chief Executive Officer',
+    department: 'Management',
     status: 'Active',
     address: '123 Admin Street, Admin City, Admin State, 123456',
     role: 'Admin',
-    working_schedule: 'full-time',
+    working_schedule: 'Full Time',
     is_disabled: false,
 };
 
