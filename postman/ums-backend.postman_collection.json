@@ -205,6 +205,118 @@
               ]
             }
           }
+        },
+        {
+          "name": "Get Master Options",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }
+            ],
+            "url": "{{baseUrl}}/get-master-options"
+          }
+        },
+        {
+          "name": "Get Document Options",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/get-master-options?category=documents",
+              "host": ["{{baseUrl}}"],
+              "path": ["get-master-options"],
+              "query": [
+                { "key": "category", "value": "documents" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Position Options",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/get-master-options?category=positions",
+              "host": ["{{baseUrl}}"],
+              "path": ["get-master-options"],
+              "query": [
+                { "key": "category", "value": "positions" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Department Options",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/get-master-options?category=departments",
+              "host": ["{{baseUrl}}"],
+              "path": ["get-master-options"],
+              "query": [
+                { "key": "category", "value": "departments" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Status Options",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/get-master-options?category=statuses",
+              "host": ["{{baseUrl}}"],
+              "path": ["get-master-options"],
+              "query": [
+                { "key": "category", "value": "statuses" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Gender Options",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/get-master-options?category=genders",
+              "host": ["{{baseUrl}}"],
+              "path": ["get-master-options"],
+              "query": [
+                { "key": "category", "value": "genders" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Working Schedule Options",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/get-master-options?category=working_schedules",
+              "host": ["{{baseUrl}}"],
+              "path": ["get-master-options"],
+              "query": [
+                { "key": "category", "value": "working_schedules" }
+              ]
+            }
+          }
         }
       ]
     },
