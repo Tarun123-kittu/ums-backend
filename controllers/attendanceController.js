@@ -119,8 +119,6 @@ exports.mark_attendance = async (req, res) => {
 
 
 
-
-
 // exports.mark_attendance = async (req, res) => {
 //     const io = req.app.get('io');
 //     const user_id = req.result.user_id;

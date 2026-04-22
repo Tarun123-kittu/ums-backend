@@ -62,10 +62,10 @@ router.post("/login", loginValidator, validateLoginDAtaTypes, userController.log
 router.post("/forgot-password", forgetPasswordValidator, validateForgotPasswordDataTypes, userController.forgot_password)
 router.post("/reset-password/:token", validateResetPasswordDataTypes, userController.reset_password)
 router.post("/change-password", authenticateToken, validateChangePassword, validateChangePasswordDataTypes, userController.change_password)
-router.get("/get-employee-details", authenticateToken, userController.get_employee_details)
 router.get("/get-employees", authenticateToken, userController.get_employees)
-router.patch("/delete-employee/:id", authenticateToken, userController.delete_employee)
+router.get("/get-employee-details", authenticateToken, userController.get_employee_details)
 router.put("/update-user", authenticateToken, updateUserValidator, userController.update_user)
+router.patch("/delete-employee/:id", authenticateToken, userController.delete_employee)
 router.get("/get-all-username", authenticateToken, userController.get_all_users_name)
 router.get("/get-user-documents", authenticateToken, userController.get_user_documents)
 

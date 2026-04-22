@@ -12,6 +12,7 @@ module.exports = {
     email_username: process.env.EMAIL_USERNAME,
     email_password: process.env.EMAIL_PASSWORD,
     lead_auth_token: process.env.LEAD_TECHNICAL_ROUND_AUTH_SECRET,
+    frontend_url: process.env.FRONTEND_URL,
     dialect: 'mysql',
 
     dialectOptions: {
